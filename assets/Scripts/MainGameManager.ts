@@ -1,4 +1,5 @@
 import Player from "./Player";
+import TileManager from "./TileManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -6,17 +7,21 @@ const { ccclass, property } = cc._decorator;
 @ccclass
 export default class MainGameManager extends cc.Component {
 
+	public tileManager: TileManager;
+
 	isStart: boolean = false;
 
 	//游戏开始的时候
 	onLoad() {
-		this.node.on(cc.Node.EventType.TOUCH_START, this.StartGame, this);
+		this.tileManager = new TileManager();
 	}
 
 	//第一帧开始
 	start() {
 		let x = this.node.position.x;
 		Player.Instance.SetXBorder(-x, x);
+
+		this.node.on(cc.Node.EventType.TOUCH_START, this.StartGame, this);
 	}
 
 	//游戏开始

@@ -6,12 +6,15 @@ const { ccclass, property } = cc._decorator;
 /** 玩家用 */
 @ccclass
 export default class Player extends cc.Component {
-	public static Instance: Player;
+	private static instance: Player;
 
+	public static get Instance() {
+		return Player.instance;
+	}
 
 	/** 左右移动的速度 */
 	@property(cc.Float)
-	public horSpeed: number = 40;
+	public horSpeed: number = 500;
 
 	/** 跳跃的力量 */
 	@property(cc.Float)
@@ -27,11 +30,12 @@ export default class Player extends cc.Component {
 
 	private isStart: boolean;//是否开始跳跃
 
+	private nowHorSpeed: number;//当前的水平速度
 	private nowVerSpeed: number;//当前的垂直的速度
 	private moveDir: number;//当前移动的方向 左:-1 中:0 右:1
 
 	onLoad() {
-		Player.Instance = this;
+		Player.instance = this;
 		cc.director.getCollisionManager().enabled = true;
 	}
 
@@ -39,8 +43,16 @@ export default class Player extends cc.Component {
 		if (this.isStart) {
 			this.nowVerSpeed -= this.downGravity * dt;
 			let pos = this.node.position;
+			pos.x += this.moveDir * this.nowHorSpeed * dt;
 			pos.y += this.nowVerSpeed * dt;
 			this.node.position = pos;
+		}
+
+		if (this.node.position.x < this.xMinBorder) {
+			this.node.x = this.xMaxBorder
+		}
+		else if (this.node.position.x > this.xMaxBorder) {
+			this.node.x = this.xMinBorder
 		}
 	}
 
@@ -78,6 +90,8 @@ export default class Player extends cc.Component {
 		}
 		else {
 			this.moveDir = Math.random() < 0.5 ? -1 : 1;
+			this.node.scaleX = this.moveDir
+			this.nowHorSpeed = Math.random() * this.horSpeed;
 		}
 	}
 
