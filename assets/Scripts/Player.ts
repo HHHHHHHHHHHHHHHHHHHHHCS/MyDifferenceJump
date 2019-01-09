@@ -1,5 +1,5 @@
-import Debug from "./Debug";
-import { Tags } from "./GameData";
+import GameData, { Tags } from "./GameData";
+import MyU from "./MyU";
 
 const { ccclass, property } = cc._decorator;
 
@@ -24,10 +24,6 @@ export default class Player extends cc.Component {
 	@property(cc.Float)
 	public downGravity: number = 1000;
 
-
-	private xMinBorder: number;//最小的边界
-	private xMaxBorder: number;//最大的边界
-
 	private isStart: boolean;//是否开始跳跃
 
 	private nowHorSpeed: number;//当前的水平速度
@@ -48,11 +44,11 @@ export default class Player extends cc.Component {
 			this.node.position = pos;
 		}
 
-		if (this.node.position.x < this.xMinBorder) {
-			this.node.x = this.xMaxBorder
+		if (this.node.position.x < GameData.xMinBorder) {
+			this.node.x = GameData.xMaxBorder;
 		}
-		else if (this.node.position.x > this.xMaxBorder) {
-			this.node.x = this.xMinBorder
+		else if (this.node.position.x > GameData.xMaxBorder) {
+			this.node.x = GameData.xMinBorder;
 		}
 	}
 
@@ -70,12 +66,6 @@ export default class Player extends cc.Component {
 
 	}
 
-	/** 设置X边界 */
-	public SetXBorder(xMin: number, xMax: number): void {
-		this.xMinBorder = xMin;
-		this.xMaxBorder = xMax;
-	}
-
 	/** 开始跳跃 */
 	public StartJump(): void {
 		this.isStart = true;
@@ -89,9 +79,9 @@ export default class Player extends cc.Component {
 			this.moveDir = jumpDir;
 		}
 		else {
-			this.moveDir = Math.random() < 0.5 ? -1 : 1;
-			this.node.scaleX = this.moveDir
-			this.nowHorSpeed = Math.random() * this.horSpeed;
+			this.moveDir = MyU.RandomNumber(-1, 1);
+			this.node.scaleX = this.moveDir;
+			this.nowHorSpeed = MyU.Random(0, this.horSpeed);
 		}
 	}
 

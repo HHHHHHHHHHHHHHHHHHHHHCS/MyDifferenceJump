@@ -1,4 +1,4 @@
-import Debug from "./Debug";
+import MyU from "./MyU";
 
 /** 对象池 */
 export default class ObjectPool<T extends cc.Component> {
@@ -23,7 +23,7 @@ export default class ObjectPool<T extends cc.Component> {
 			}
 			return temp;
 		}
-		Debug.Log("Prefab is null can't Instantiate");
+		MyU.Log("Prefab is null can't Instantiate");
 		return null;
 	}
 

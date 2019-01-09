@@ -1,4 +1,3 @@
-import Debug from "./Debug";
 
 const { ccclass, property } = cc._decorator
 
