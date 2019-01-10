@@ -20,6 +20,7 @@ export default class GameData extends cc.Component {
 
 	public static startTileY: number = -750;//开始跳板的Y,第一个会加一个nextTileY
 	public static nextTileY: number = 350;//下一个跳板的Y
+	public static recoveryTileY: number = 1200;//跳板回收的Y
 
 	public static xMinBorder: number;//x最小的边界
 	public static xMaxBorder: number;//x最大的边界

@@ -1,4 +1,4 @@
-import MyU from "./MyU";
+import MyU from "./My/MyU";
 
 /** 对象池 */
 export default class ObjectPool<T extends cc.Component> {
@@ -19,7 +19,7 @@ export default class ObjectPool<T extends cc.Component> {
 		if (this.prefab) {
 			let temp = cc.instantiate(this.prefab);
 			if (this.parent) {
-				temp.parent = this.parent;
+				temp.setParent(this.parent);
 			}
 			return temp;
 		}
@@ -28,13 +28,17 @@ export default class ObjectPool<T extends cc.Component> {
 	}
 
 	public Get(): T {
+		let temp: cc.Node;
 		if (this.objPool.size() > 0) {
-			return this.objPool.get().getComponent(this.type);
-
+			temp = this.objPool.get();
 		}
 		else {
-			return this.Instantiate().getComponent(this.type);
+			temp = this.Instantiate();
 		}
+		if (this.parent) {
+			temp.setParent(this.parent);
+		}
+		return temp.getComponent(this.type);;
 	}
 
 	public Put(item: T) {

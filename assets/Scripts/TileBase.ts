@@ -27,7 +27,7 @@ export default class TileBase extends cc.Component {
 	}
 
 	protected onLoad() {
-		this.sprite = this.getComponent(cc.Sprite);
+		this.sprite = this.node.getChildByName("TileImage").getComponent(cc.Sprite);
 
 		this.node.on(cc.Node.EventType.TOUCH_START, this.StartTouch, this);
 		this.node.on(cc.Node.EventType.TOUCH_MOVE, this.KeepTouch, this);
@@ -40,7 +40,7 @@ export default class TileBase extends cc.Component {
 		this._tileType = type;
 		this.sprite.spriteFrame = GameData.Instance.tileSprites[this.tileType];
 		this.node.position = pos;
-		
+
 		this.RegisterEvent();
 	}
 

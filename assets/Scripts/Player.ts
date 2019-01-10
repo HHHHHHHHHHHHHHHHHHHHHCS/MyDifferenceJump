@@ -1,5 +1,5 @@
 import GameData, { Tags } from "./GameData";
-import MyU from "./MyU";
+import MyU from "./My/MyU";
 
 const { ccclass, property } = cc._decorator;
 
