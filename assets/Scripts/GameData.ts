@@ -5,6 +5,13 @@ export const enum Tags {
 	Tile,
 }
 
+export const enum GameState{
+	Ready,
+	Playing,
+	Stop,
+	GameOver
+}
+
 @ccclass
 /** 
  * 必须要在MainGameManager上面 脚本执行顺序问题 
@@ -24,6 +31,7 @@ export default class GameData extends cc.Component {
 
 	public static xMinBorder: number;//x最小的边界
 	public static xMaxBorder: number;//x最大的边界
+	public static halfYBorder: number;//y的一半
 
 	@property(cc.Prefab)
 	public tilePrefab: cc.Prefab = null;
@@ -35,7 +43,9 @@ export default class GameData extends cc.Component {
 
 	onLoad() {
 		GameData.instance = this;
-		GameData.xMaxBorder = cc.Canvas.instance.node.x;
+		let canvas = cc.Canvas.instance.node;
+		GameData.xMaxBorder = canvas.x;
 		GameData.xMinBorder = -GameData.xMaxBorder;
+		GameData.halfYBorder = canvas.y;
 	}
 }

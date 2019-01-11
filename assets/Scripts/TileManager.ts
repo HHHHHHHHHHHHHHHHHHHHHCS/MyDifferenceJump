@@ -27,7 +27,6 @@ export default class TileManager {
 		let pos = new cc.Vec2(MyU.Random(GameData.xMinBorder, GameData.xMaxBorder), this.currentTileY);
 		temp.Init(0, pos);
 		this.nowTilesList.push(temp);
-		MyU.Log(temp.node.position);
 	}
 
 	public OnRecovery(cameraY: number) {
@@ -40,7 +39,6 @@ export default class TileManager {
 				break;
 			}
 		}
-		//MyU.Log(removeIndex);
 		for (let i = 0; i <= removeIndex; i++) {
 			let tile = this.nowTilesList.shift();
 			tile.Recovery();
