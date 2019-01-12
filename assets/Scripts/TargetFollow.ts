@@ -1,4 +1,5 @@
 import MainGameManager from "./MainGameManager";
+import MyU from "./My/MyU";
 
 const { ccclass, property } = cc._decorator
 

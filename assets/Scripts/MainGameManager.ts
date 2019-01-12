@@ -23,8 +23,7 @@ export default class MainGameManager extends cc.Component {
 	//游戏开始的时候
 	onLoad() {
 		MainGameManager.Instance = this;
-		this.node.position=cc.Camera.main.node.position;
-		this.gameOverBg=cc.find("UIRoot/GameOverBg").getComponent(GameOverBg);
+		this.gameOverBg=cc.find("World/UIRoot/GameOverBg").getComponent(GameOverBg);
 		this.tileManager = new TileManager();
 	}
 
@@ -54,6 +53,6 @@ export default class MainGameManager extends cc.Component {
 	public GameOver() {
 		this.gameState = GameState.GameOver;
 		this.isPlaying = false;
-		this.gameOverBg.Show();
+		//this.gameOverBg.Show();
 	}
 }

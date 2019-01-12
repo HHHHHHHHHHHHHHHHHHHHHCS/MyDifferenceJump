@@ -117,7 +117,6 @@ export default class Player extends cc.Component {
 	}
 
 	public GameOver() {
-		MyU.Log("Die");
 		this.collider.enabled = false;
 		this.isPlaying = false;
 		MainGameManager.Instance.GameOver();

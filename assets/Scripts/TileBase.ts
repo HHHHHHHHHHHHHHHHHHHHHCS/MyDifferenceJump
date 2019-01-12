@@ -1,4 +1,5 @@
 import GameData from "./GameData";
+import MyU from "./My/MyU";
 
 const { ccclass, property } = cc._decorator;
 
@@ -62,6 +63,7 @@ export default class TileBase extends cc.Component {
 	}
 
 	private StartTouch(event: cc.Event.EventTouch) {
+		MyU.Log(1);
 		if (this.startTouchEvent) {
 			this.startTouchEvent();
 		}
@@ -69,6 +71,7 @@ export default class TileBase extends cc.Component {
 	}
 
 	private KeepTouch(event: cc.Event.EventTouch) {
+		MyU.Log(2);
 		if (this.keepTouchEvent) {
 			this.keepTouchEvent(event)
 		}
@@ -76,6 +79,7 @@ export default class TileBase extends cc.Component {
 	}
 
 	private EndTouch(event: cc.Event.EventTouch) {
+		MyU.Log(3);
 		if (this.endTouchEvent) {
 			this.endTouchEvent(event)
 		}

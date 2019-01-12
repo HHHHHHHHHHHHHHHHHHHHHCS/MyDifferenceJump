@@ -11,7 +11,7 @@ export default class TileManager {
 
 	public constructor() {
 		this.nowTilesList = [];
-		let parent = cc.find("UIRoot/TileParent");
+		let parent = cc.find("World/TileParent");
 		this.tilePool = new ObjectPool(GameData.Instance.tilePrefab, TileBase, 20, parent);
 
 		this.currentTileY = GameData.startTileY;
