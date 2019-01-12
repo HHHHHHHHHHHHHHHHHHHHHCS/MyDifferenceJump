@@ -31,7 +31,8 @@ export default class Player extends cc.Component {
 
 	private isPlaying: boolean;//是否开始跳跃
 
-
+	public lastPlayerY: number;//玩家最高的Y
+	private scoreOffset: number;//分数差距偏移
 	private nowHorSpeed: number;//当前的水平速度
 	private nowVerSpeed: number;//当前的垂直的速度
 	private moveDir: number;//当前移动的方向 左:-1 中:0 右:1
@@ -41,6 +42,8 @@ export default class Player extends cc.Component {
 		Player.playerDieY += GameData.halfYBorder;
 		cc.director.getCollisionManager().enabled = true;
 		this.collider = this.getComponent(cc.BoxCollider);
+		this.lastPlayerY = this.node.y;
+		this.scoreOffset = -this.lastPlayerY;
 	}
 
 	update(dt: number) {
@@ -54,13 +57,14 @@ export default class Player extends cc.Component {
 		pos.y += this.nowVerSpeed * dt;
 		this.node.position = pos;
 
-
 		if (this.node.position.x < GameData.xMinBorder) {
 			this.node.x = GameData.xMaxBorder;
 		}
 		else if (this.node.position.x > GameData.xMaxBorder) {
 			this.node.x = GameData.xMinBorder;
 		}
+
+		this.UpdateScore();
 
 		if (this.CheckDie()) {
 			return;
@@ -106,6 +110,12 @@ export default class Player extends cc.Component {
 		}
 	}
 
+	public UpdateScore(){
+		if(this.node.y>this.lastPlayerY){
+			this.lastPlayerY=this.node.y;
+			MainGameManager.Instance.UpdateNowScore(this.lastPlayerY+this.scoreOffset);
+		}
+	}
 
 	public CheckDie(): boolean {
 		let dieY = MainGameManager.Instance.lastRecoveryY - Player.playerDieY;

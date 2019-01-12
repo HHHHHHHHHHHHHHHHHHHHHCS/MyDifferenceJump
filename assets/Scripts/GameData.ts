@@ -43,9 +43,9 @@ export default class GameData extends cc.Component {
 
 	onLoad() {
 		GameData.instance = this;
-		let canvas = cc.Canvas.instance.node;
-		GameData.xMaxBorder = canvas.x;
+		let world = cc.find("World");
+		GameData.xMaxBorder = world.x;
 		GameData.xMinBorder = -GameData.xMaxBorder;
-		GameData.halfYBorder = canvas.y;
+		GameData.halfYBorder = world.y;
 	}
 }

@@ -1,8 +1,8 @@
 import Player from "./Player";
 import TileManager from "./TileManager";
 import { GameState } from "./GameData";
-import GameOverBg from "./GameOverBg";
 import MyU from "./My/MyU";
+import MainUIManager from "./MainUIManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -11,24 +11,28 @@ const { ccclass, property } = cc._decorator;
 export default class MainGameManager extends cc.Component {
 	public static Instance: MainGameManager;
 
+
 	public lastRecoveryY: number = Number.MIN_SAFE_INTEGER;//摄像机的最高Y
+
+	public mainUIManager: MainUIManager;
+	public tileManager: TileManager;
 
 	public isPlaying: boolean;
 	public gameState: GameState;
-	public tileManager: TileManager;
 
-	private gameOverBg:GameOverBg;
+	private score: number = -1;
 
 
 	//游戏开始的时候
 	onLoad() {
 		MainGameManager.Instance = this;
-		this.gameOverBg=cc.find("World/UIRoot/GameOverBg").getComponent(GameOverBg);
+		this.mainUIManager = cc.find("World/UIRoot").getComponent(MainUIManager);
 		this.tileManager = new TileManager();
 	}
 
 	//第一帧开始
 	start() {
+		this.UpdateNowScore(0);
 		this.gameState = GameState.Ready;
 		this.node.on(cc.Node.EventType.TOUCH_START, this.StartGame, this);
 	}
@@ -41,8 +45,15 @@ export default class MainGameManager extends cc.Component {
 		Player.Instance.StartJump();
 	}
 
+	public UpdateNowScore(val: number) {
+		if (val > this.score) {
+			this.score = val;
+			this.mainUIManager.UpdateScore(val);
+		}
+	}
+
 	public Recovery(cameraY: number) {
-		if(this.isPlaying){
+		if (this.isPlaying) {
 			if (cameraY > this.lastRecoveryY) {
 				this.lastRecoveryY = cameraY;
 				this.tileManager.OnRecovery(cameraY);
@@ -53,6 +64,6 @@ export default class MainGameManager extends cc.Component {
 	public GameOver() {
 		this.gameState = GameState.GameOver;
 		this.isPlaying = false;
-		//this.gameOverBg.Show();
+		this.mainUIManager.ShowGameOverBg();
 	}
 }
