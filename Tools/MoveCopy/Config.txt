@@ -1,1 +1,1 @@
-target = ""
+target = "E:\MyWechatGame\MyDifferenceJump\wechatgame"
