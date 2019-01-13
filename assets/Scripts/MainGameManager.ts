@@ -3,6 +3,7 @@ import TileManager from "./TileManager";
 import { GameState } from "./GameData";
 import MyU from "./My/MyU";
 import MainUIManager from "./MainUIManager";
+import BackgroundManager from "./BackgroundManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -16,6 +17,7 @@ export default class MainGameManager extends cc.Component {
 
 	public mainUIManager: MainUIManager;
 	public tileManager: TileManager;
+	public backgroundManager: BackgroundManager;
 
 	public isPlaying: boolean;
 	public gameState: GameState;
@@ -27,6 +29,7 @@ export default class MainGameManager extends cc.Component {
 	onLoad() {
 		MainGameManager.Instance = this;
 		this.mainUIManager = cc.find("World/UIRoot").getComponent(MainUIManager);
+		this.backgroundManager = cc.find("World/Backgrounds").getComponent(BackgroundManager);
 		this.tileManager = new TileManager();
 	}
 
@@ -46,6 +49,7 @@ export default class MainGameManager extends cc.Component {
 	}
 
 	public UpdateNowScore(val: number) {
+		val = Math.ceil(val / 100);
 		if (val > this.score) {
 			this.score = val;
 			this.mainUIManager.UpdateScore(val);
@@ -57,6 +61,7 @@ export default class MainGameManager extends cc.Component {
 			if (cameraY > this.lastRecoveryY) {
 				this.lastRecoveryY = cameraY;
 				this.tileManager.OnRecovery(cameraY);
+				this.backgroundManager.OnRecovery(cameraY);
 			}
 		}
 	}

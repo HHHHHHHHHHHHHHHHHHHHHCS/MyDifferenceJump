@@ -31,11 +31,16 @@ export default class Player extends cc.Component {
 
 	private isPlaying: boolean;//是否开始跳跃
 
-	public lastPlayerY: number;//玩家最高的Y
+	private lastPlayerY: number;//玩家最高的Y
 	private scoreOffset: number;//分数差距偏移
 	private nowHorSpeed: number;//当前的水平速度
 	private nowVerSpeed: number;//当前的垂直的速度
 	private moveDir: number;//当前移动的方向 左:-1 中:0 右:1
+
+	private hardNumber: number;
+	private hardDownForce: number;
+	private hardJumpForce: number;
+	private hardHorSpeed: number;
 
 	onLoad() {
 		Player.instance = this;
@@ -44,6 +49,8 @@ export default class Player extends cc.Component {
 		this.collider = this.getComponent(cc.BoxCollider);
 		this.lastPlayerY = this.node.y;
 		this.scoreOffset = -this.lastPlayerY;
+
+		this.AddHard(1);
 	}
 
 	update(dt: number) {
@@ -51,7 +58,7 @@ export default class Player extends cc.Component {
 			return;
 		}
 
-		this.nowVerSpeed -= this.downGravity * dt;
+		this.nowVerSpeed -= this.hardDownForce * dt;
 		let pos = this.node.position;
 		pos.x += this.moveDir * this.nowHorSpeed * dt;
 		pos.y += this.nowVerSpeed * dt;
@@ -91,6 +98,19 @@ export default class Player extends cc.Component {
 
 	}
 
+	/** 添加难度 */
+	public AddHard(val?: number) {
+		if (val) {
+			this.hardNumber = val;
+		}
+		else {
+			this.hardNumber *= GameData.hardBase;
+		}
+		this.hardDownForce = this.downGravity * this.hardNumber;
+		this.hardJumpForce = this.jumpForce * Math.sqrt(this.hardNumber);
+		this.hardHorSpeed = this.horSpeed * this.hardNumber;
+	}
+
 	/** 开始跳跃 */
 	public StartJump(): void {
 		this.isPlaying = true;
@@ -99,21 +119,21 @@ export default class Player extends cc.Component {
 
 	/** 跳跃 */
 	public Jump(jumpDir?: number): void {
-		this.nowVerSpeed = this.jumpForce;
+		this.nowVerSpeed = this.hardJumpForce;
 		if (jumpDir) {
 			this.moveDir = jumpDir;
 		}
 		else {
 			this.moveDir = MyU.RandomNumber(-1, 1);
 			this.node.scaleX = this.moveDir;
-			this.nowHorSpeed = MyU.Random(0, this.horSpeed);
+			this.nowHorSpeed = MyU.Random(0, this.hardHorSpeed);
 		}
 	}
 
-	public UpdateScore(){
-		if(this.node.y>this.lastPlayerY){
-			this.lastPlayerY=this.node.y;
-			MainGameManager.Instance.UpdateNowScore(this.lastPlayerY+this.scoreOffset);
+	public UpdateScore() {
+		if (this.node.y > this.lastPlayerY) {
+			this.lastPlayerY = this.node.y;
+			MainGameManager.Instance.UpdateNowScore(this.lastPlayerY + this.scoreOffset);
 		}
 	}
 

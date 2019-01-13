@@ -2,6 +2,7 @@ import TileBase from "./TileBase";
 import ObjectPool from "./ObjectPool";
 import GameData from "./GameData";
 import MyU from "./My/MyU";
+import Player from "./Player";
 
 export default class TileManager {
 	private nowTilesList: TileBase[];
@@ -9,9 +10,12 @@ export default class TileManager {
 
 	private currentTileY: number;
 
+	private platform: cc.Node;
+
 	public constructor() {
 		this.nowTilesList = [];
 		let parent = cc.find("World/TileParent");
+		this.platform = cc.find("World/Platform");
 		this.tilePool = new ObjectPool(GameData.Instance.tilePrefab, TileBase, 20, parent);
 
 		this.currentTileY = GameData.startTileY;
@@ -21,6 +25,7 @@ export default class TileManager {
 		}
 	}
 
+	/** 生产跳板 */
 	public SpawnTile() {
 		let temp = this.tilePool.Get();
 		this.currentTileY += GameData.nextTileY;
@@ -29,10 +34,21 @@ export default class TileManager {
 		this.nowTilesList.push(temp);
 	}
 
+	/** 回收 */
 	public OnRecovery(cameraY: number) {
-		
+
 		let recoveryY = cameraY - GameData.recoveryTileY;
 		let removeIndex = -1;
+
+		//摧毁底部平台
+		if (this.platform != null) {
+			if (this.platform.y < recoveryY) {
+				this.platform.destroy();
+				this.platform = null;
+			}
+		}
+
+		//标记销毁
 		for (let i = 0; i < this.nowTilesList.length; i++) {
 			if (this.nowTilesList[i].node.y > recoveryY) {
 				removeIndex = i - 1;
@@ -47,6 +63,7 @@ export default class TileManager {
 
 		for (let i = 0; i <= removeIndex; i++) {
 			//增加游戏难度
+			Player.Instance.AddHard();
 			//生成新的块
 			this.SpawnTile();
 			//添加道具
