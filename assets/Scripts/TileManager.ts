@@ -1,4 +1,4 @@
-import TileBase from "./TileBase";
+import TileBase, { TileType } from "./TileBase";
 import ObjectPool from "./ObjectPool";
 import GameData from "./GameData";
 import MyU from "./My/MyU";
@@ -11,6 +11,9 @@ export default class TileManager {
 	private currentTileY: number;
 
 	private platform: cc.Node;
+
+	private currentTileIndex: number = 0;
+	private lastNormalVerIndex: number = GameData.normalVerNext;
 
 	public constructor() {
 		this.nowTilesList = [];
@@ -27,11 +30,43 @@ export default class TileManager {
 
 	/** 生产跳板 */
 	public SpawnTile() {
+		this.currentTileIndex++;
 		let temp = this.tilePool.Get();
 		this.currentTileY += GameData.nextTileY;
 		let pos = new cc.Vec2(MyU.Random(GameData.xMinBorder, GameData.xMaxBorder), this.currentTileY);
-		temp.Init(0, pos);
+		let type = this.CheckSpawnTileType(this.GetRandomTileType());
+		temp.Init(type, pos);
 		this.nowTilesList.push(temp);
+	}
+
+	/** 获得随机跳板 */
+	public GetRandomTileType(): TileType {
+		let weight = MyU.Random(0, GameData.allTileWeight);
+		if (weight <= GameData.normalHorWeight) {
+			return TileType.Normal_Hor;
+		}
+
+		if (weight <= GameData.normalVerWeight) {
+			return TileType.Normal_Ver;
+		}
+
+		return TileType.Normal_Hor;
+	}
+
+
+	/** 检查生成的跳板是否符合间隔 */
+	public CheckSpawnTileType(type: TileType): TileType {
+		switch (type) {
+			case TileType.Normal_Ver: {
+				if (this.currentTileIndex >= this.lastNormalVerIndex) {
+					this.lastNormalVerIndex = this.currentTileIndex + GameData.nextTileY;
+					return type;
+				}
+				return TileType.Normal_Hor;
+			}
+		}
+
+		return type;
 	}
 
 	/** 回收 */

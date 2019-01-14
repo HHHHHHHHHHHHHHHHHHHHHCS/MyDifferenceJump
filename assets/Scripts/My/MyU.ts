@@ -38,4 +38,18 @@ export default class MyU {
 	public static RandomInt(min: number, max: number): number {
 		return Math.floor(Math.random() * (max - min + 1) + min);
 	}
+
+	/** 
+	 * 限制[0,1] 
+	 */
+	public static Clamp01(val: number): number {
+		return val < 0 ? 0 : (val > 1 ? 1 : val);
+	}
+
+	/**
+	 * 限制[min,max]
+	 */
+	public static Clamp(val: number, min: number, max: number) {
+		return val < min ? min : (val > max ? max : val);
+	}
 }

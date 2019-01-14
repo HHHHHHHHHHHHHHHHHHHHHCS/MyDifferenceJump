@@ -15,7 +15,7 @@ export const enum TileType {
 @ccclass
 export default class TileBase extends cc.Component {
 
-	private _tileType: TileType;
+	private tileType: TileType;
 
 	private sprite: cc.Sprite;
 
@@ -23,8 +23,11 @@ export default class TileBase extends cc.Component {
 	private keepTouchEvent: Function;
 	private endTouchEvent: Function;
 
-	public get tileType() {
-		return this._tileType;
+	private clampUp: number;//上的限制
+	private clampDown: number;//下的限制
+
+	public get TileType() {
+		return this.tileType;
 	}
 
 	protected onLoad() {
@@ -38,15 +41,25 @@ export default class TileBase extends cc.Component {
 
 	public Init(type: TileType, pos: cc.Vec2) {
 		this.node.active = true;
-		this._tileType = type;
+		this.tileType = type;
 		this.sprite.spriteFrame = GameData.Instance.tileSprites[this.tileType];
 		this.node.position = pos;
-
+		this.SwichType();
 		this.RegisterEvent();
 	}
 
+	private SwichType() {
+		switch (this.tileType) {
+			case TileType.Normal_Hor: {
+				this.clampUp = this.node.position.y + GameData.horMoveClamp;
+				this.clampDown = this.node.position.y - GameData.horMoveClamp;
+				break;
+			}
+		}
+	}
+
 	private RegisterEvent() {
-		switch (this._tileType) {
+		switch (this.tileType) {
 			case TileType.Normal_Hor: {
 				this.startTouchEvent = this.Normal_Start;
 				this.keepTouchEvent = this.Normal_Hor_Keep;
@@ -102,12 +115,14 @@ export default class TileBase extends cc.Component {
 
 	private Normal_Hor_Keep(event: cc.Event.EventTouch) {
 		let delta = event.touch.getDelta();
-		this.node.x += delta.x;
+		let will = this.node.x + delta.x;
+		this.node.x = MyU.Clamp(will, GameData.xMinBorder, GameData.xMaxBorder);
 	}
 
 	private Normal_Ver_Keep(event: cc.Event.EventTouch) {
 		let delta = event.touch.getDelta();
-		this.node.y += delta.y;
+		let will = this.node.y + delta.y;
+		this.node.y = MyU.Clamp(will, this.clampDown, this.clampUp);
 	}
 
 	private Normal_Hor_End() {
