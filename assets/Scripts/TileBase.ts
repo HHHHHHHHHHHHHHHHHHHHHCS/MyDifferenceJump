@@ -46,8 +46,10 @@ export default class TileBase extends cc.Component {
 	}
 
 	protected update(dt: number) {
-		if (this.updateEvent) {
-			this.updateEvent(dt);
+		if(MainGameManager.Instance.isPlaying){
+			if (this.updateEvent) {
+				this.updateEvent(dt);
+			}
 		}
 	}
 
