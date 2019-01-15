@@ -3,6 +3,7 @@ import ObjectPool from "./ObjectPool";
 import GameData from "./GameData";
 import MyU from "./My/MyU";
 import Player from "./Player";
+import MainGameManager from "./MainGameManager";
 
 export default class TileManager {
 	private nowTilesList: TileBase[];
@@ -14,6 +15,7 @@ export default class TileManager {
 
 	private currentTileIndex: number = 0;
 	private lastNormalVerIndex: number = GameData.normalVerNext;
+	private lastMoveHorIndex: number = GameData.moveHorNext;
 
 	public constructor() {
 		this.nowTilesList = [];
@@ -22,7 +24,9 @@ export default class TileManager {
 		this.tilePool = new ObjectPool(GameData.Instance.tilePrefab, TileBase, 20, parent);
 
 		this.currentTileY = GameData.startTileY;
+	}
 
+	public OnStart() {
 		for (let i = 0; i < 10; i++) {
 			this.SpawnTile();
 		}
@@ -32,9 +36,18 @@ export default class TileManager {
 	public SpawnTile() {
 		this.currentTileIndex++;
 		let temp = this.tilePool.Get();
-		this.currentTileY += GameData.nextTileY;
-		let pos = new cc.Vec2(MyU.Random(GameData.xMinBorder, GameData.xMaxBorder), this.currentTileY);
 		let type = this.CheckSpawnTileType(this.GetRandomTileType());
+		switch (type) {
+			case TileType.Normal_Ver: {
+				this.currentTileY += GameData.normalVerNextTileY;
+				break;
+			}
+			default: {
+				this.currentTileY += GameData.defaultNextTileY;
+				break;
+			}
+		}
+		let pos = new cc.Vec2(MyU.Random(GameData.xMinBorder, GameData.xMaxBorder), this.currentTileY);
 		temp.Init(type, pos);
 		this.nowTilesList.push(temp);
 	}
@@ -50,6 +63,10 @@ export default class TileManager {
 			return TileType.Normal_Ver;
 		}
 
+		if (weight <= GameData.moveHorWeight) {
+			return TileType.Move_Hor;
+		}
+
 		return TileType.Normal_Hor;
 	}
 
@@ -59,7 +76,14 @@ export default class TileManager {
 		switch (type) {
 			case TileType.Normal_Ver: {
 				if (this.currentTileIndex >= this.lastNormalVerIndex) {
-					this.lastNormalVerIndex = this.currentTileIndex + GameData.nextTileY;
+					this.lastNormalVerIndex = this.currentTileIndex + GameData.normalVerNext;
+					return type;
+				}
+				return TileType.Normal_Hor;
+			}
+			case TileType.Move_Hor: {
+				if (this.currentTileIndex >= this.lastMoveHorIndex) {
+					this.lastMoveHorIndex = this.currentTileIndex + GameData.moveHorNext;
 					return type;
 				}
 				return TileType.Normal_Hor;
@@ -98,7 +122,7 @@ export default class TileManager {
 
 		for (let i = 0; i <= removeIndex; i++) {
 			//增加游戏难度
-			Player.Instance.AddHard();
+			MainGameManager.Instance.AddHard();
 			//生成新的块
 			this.SpawnTile();
 			//添加道具

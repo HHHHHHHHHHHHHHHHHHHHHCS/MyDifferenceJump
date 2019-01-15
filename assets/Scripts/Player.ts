@@ -1,6 +1,7 @@
 import GameData, { Tags } from "./GameData";
 import MyU from "./My/MyU";
 import MainGameManager from "./MainGameManager";
+import TileBase from "./TileBase";
 
 const { ccclass, property } = cc._decorator;
 
@@ -37,7 +38,6 @@ export default class Player extends cc.Component {
 	private nowVerSpeed: number;//当前的垂直的速度
 	private moveDir: number;//当前移动的方向 左:-1 中:0 右:1
 
-	private hardNumber: number;
 	private hardDownForce: number;
 	private hardJumpForce: number;
 	private hardHorSpeed: number;
@@ -49,15 +49,12 @@ export default class Player extends cc.Component {
 		this.collider = this.getComponent(cc.BoxCollider);
 		this.lastPlayerY = this.node.y;
 		this.scoreOffset = -this.lastPlayerY;
-
-		this.AddHard(1);
 	}
 
 	update(dt: number) {
 		if (!this.isPlaying) {
 			return;
 		}
-
 		this.nowVerSpeed -= this.hardDownForce * dt;
 		let pos = this.node.position;
 		pos.x += this.moveDir * this.nowHorSpeed * dt;
@@ -81,7 +78,7 @@ export default class Player extends cc.Component {
 	onCollisionEnter(other: cc.Collider, self: cc.Collider) {
 		if (other.tag == Tags.Tile) {
 			if (this.nowVerSpeed <= 0) {
-				this.Jump();
+				this.Jump(other);
 			}
 		}
 	}
@@ -89,7 +86,7 @@ export default class Player extends cc.Component {
 	onCollisionStay(other, self) {
 		if (other.tag == Tags.Tile) {
 			if (this.nowVerSpeed <= 0) {
-				this.Jump();
+				this.Jump(other);
 			}
 		}
 	}
@@ -99,26 +96,20 @@ export default class Player extends cc.Component {
 	}
 
 	/** 添加难度 */
-	public AddHard(val?: number) {
-		if (val) {
-			this.hardNumber = val;
-		}
-		else {
-			this.hardNumber *= GameData.hardBase;
-		}
-		this.hardDownForce = this.downGravity * this.hardNumber;
-		this.hardJumpForce = this.jumpForce * Math.sqrt(this.hardNumber);
-		this.hardHorSpeed = this.horSpeed * this.hardNumber;
+	public AddHard(val: number) {
+		this.hardDownForce = this.downGravity * val;
+		this.hardJumpForce = this.jumpForce * Math.sqrt(val);
+		this.hardHorSpeed = this.horSpeed * val;
 	}
 
 	/** 开始跳跃 */
 	public StartJump(): void {
 		this.isPlaying = true;
-		this.Jump(0);
+		this.Jump(null, 0);
 	}
 
 	/** 跳跃 */
-	public Jump(jumpDir?: number): void {
+	public Jump(tile?: cc.Collider, jumpDir?: number): void {
 		this.nowVerSpeed = this.hardJumpForce;
 		if (jumpDir) {
 			this.moveDir = jumpDir;
@@ -128,8 +119,13 @@ export default class Player extends cc.Component {
 			this.node.scaleX = this.moveDir;
 			this.nowHorSpeed = MyU.Random(0, this.hardHorSpeed);
 		}
+
+		if (tile) {
+			tile.node.parent.getComponent(TileBase).DoJump();
+		}
 	}
 
+	/** 更新分数 */
 	public UpdateScore() {
 		if (this.node.y > this.lastPlayerY) {
 			this.lastPlayerY = this.node.y;
@@ -137,6 +133,7 @@ export default class Player extends cc.Component {
 		}
 	}
 
+	/** 检测死亡 */
 	public CheckDie(): boolean {
 		let dieY = MainGameManager.Instance.lastRecoveryY - Player.playerDieY;
 		if (dieY > this.node.y) {
@@ -146,6 +143,7 @@ export default class Player extends cc.Component {
 		return false;
 	}
 
+	/** 游戏结束 */
 	public GameOver() {
 		this.collider.enabled = false;
 		this.isPlaying = false;
