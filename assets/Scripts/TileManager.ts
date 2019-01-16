@@ -4,10 +4,12 @@ import GameData from "./GameData";
 import MyU from "./My/MyU";
 import Player from "./Player";
 import MainGameManager from "./MainGameManager";
+import TouchBreakChild from "./TouchBreakChild";
 
 export default class TileManager {
 	private nowTilesList: TileBase[];
 	private tilePool: ObjectPool<TileBase>;
+	private touchBreakPool: ObjectPool<TouchBreakChild>;
 
 	private currentTileY: number;
 
@@ -16,13 +18,14 @@ export default class TileManager {
 	private currentTileIndex: number = 0;
 	private lastNormalVerIndex: number = GameData.normalVerNext;
 	private lastMoveHorIndex: number = GameData.moveHorNext;
+	private lastTouchBreakIndex: number = GameData.touchBreakNext;
 
 	public constructor() {
 		this.nowTilesList = [];
 		let parent = cc.find("World/TileParent");
 		this.platform = cc.find("World/Platform");
 		this.tilePool = new ObjectPool(GameData.Instance.tilePrefab, TileBase, 20, parent);
-
+		this.touchBreakPool = new ObjectPool(GameData.Instance.touchBreakPrefab, TouchBreakChild, 0, parent);
 		this.currentTileY = GameData.startTileY;
 	}
 
@@ -67,6 +70,10 @@ export default class TileManager {
 			return TileType.Move_Hor;
 		}
 
+		if (weight <= GameData.touchBreakWeight) {
+			return TileType.Touch_Break;
+		}
+
 		return TileType.Normal_Hor;
 	}
 
@@ -84,6 +91,13 @@ export default class TileManager {
 			case TileType.Move_Hor: {
 				if (this.currentTileIndex >= this.lastMoveHorIndex) {
 					this.lastMoveHorIndex = this.currentTileIndex + GameData.moveHorNext;
+					return type;
+				}
+				return TileType.Normal_Hor;
+			}
+			case TileType.Touch_Break: {
+				if (this.currentTileIndex >= this.lastTouchBreakIndex) {
+					this.lastTouchBreakIndex = this.currentTileIndex + GameData.touchBreakNext;
 					return type;
 				}
 				return TileType.Normal_Hor;
@@ -127,5 +141,16 @@ export default class TileManager {
 			this.SpawnTile();
 			//添加道具
 		}
+	}
+
+	public SpawnTouchBreak(tile: TileBase) {
+		let leftTemp = this.touchBreakPool.Get();
+		leftTemp.OnInit(tile, true);
+		let rightTemp = this.touchBreakPool.Get();
+		rightTemp.OnInit(tile, false);
+	}
+
+	public RecoveryTouchBreak(touchBreak: TouchBreakChild) {
+		this.touchBreakPool.Put(touchBreak);
 	}
 }

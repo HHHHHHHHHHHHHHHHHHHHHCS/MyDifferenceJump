@@ -8,9 +8,10 @@ export const enum TileType {
 	Normal_Hor = 0,
 	Normal_Ver,
 	Move_Hor,
-	Broken_Hor,
+	Touch_Break,
 	Spring_Hor,
-	Touch_Break
+	Frozen_Hor,
+
 }
 
 @ccclass
@@ -46,7 +47,7 @@ export default class TileBase extends cc.Component {
 	}
 
 	protected update(dt: number) {
-		if(MainGameManager.Instance.isPlaying){
+		if (MainGameManager.Instance.isPlaying) {
 			if (this.updateEvent) {
 				this.updateEvent(dt);
 			}
@@ -210,12 +211,15 @@ export default class TileBase extends cc.Component {
 	//#region Touch_Break_Tile
 
 	private Touch_Break_End() {
-		this.node.active = false;
-		//碎开
+		if (MainGameManager.Instance.isPlaying) {
+			this.node.active = false;
+			MainGameManager.Instance.tileManager.SpawnTouchBreak(this);
+		}
 	}
 
 	/** 掉落 */
 	private DropDown() {
+		//就算是掉下去,也不着急回收,按照index回收
 		this.node.runAction(cc.moveBy(0.5, 0, -500));
 		this.RecoveryNoAction();
 	}

@@ -2,6 +2,7 @@ import GameData, { Tags } from "./GameData";
 import MyU from "./My/MyU";
 import MainGameManager from "./MainGameManager";
 import TileBase from "./TileBase";
+import TouchBreakChild from "./TouchBreakChild";
 
 const { ccclass, property } = cc._decorator;
 
@@ -76,7 +77,7 @@ export default class Player extends cc.Component {
 	}
 
 	onCollisionEnter(other: cc.Collider, self: cc.Collider) {
-		if (other.tag == Tags.Tile) {
+		if (other.tag == Tags.Tile||other.tag == Tags.TileChild) {
 			if (this.nowVerSpeed <= 0) {
 				this.Jump(other);
 			}
@@ -84,7 +85,7 @@ export default class Player extends cc.Component {
 	}
 
 	onCollisionStay(other, self) {
-		if (other.tag == Tags.Tile) {
+		if (other.tag == Tags.Tile||other.tag == Tags.TileChild) {
 			if (this.nowVerSpeed <= 0) {
 				this.Jump(other);
 			}
@@ -121,7 +122,15 @@ export default class Player extends cc.Component {
 		}
 
 		if (tile) {
-			tile.node.parent.getComponent(TileBase).DoJump();
+			if (tile.tag == Tags.Tile) {
+				let tileCom = tile.node.parent.getComponent(TileBase);
+				if (tileCom) {
+					tileCom.DoJump();
+				}
+			}
+			else if (tile.tag == Tags.TileChild) {
+				tile.node.getComponent(TouchBreakChild).DoJump();
+			}
 		}
 	}
 

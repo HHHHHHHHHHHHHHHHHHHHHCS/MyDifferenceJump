@@ -3,7 +3,7 @@ const { ccclass, property } = cc._decorator;
 export const enum Tags {
 	Player = 0,
 	Tile,
-	TileEffect,
+	TileChild,
 }
 
 export const enum GameState {
@@ -29,6 +29,7 @@ export default class GameData extends cc.Component {
 	//#region 游戏的数据-----------
 	public static hardBase: number = 1.005;//难度的基数
 
+	public static XLength: number;//x的大小
 	public static xMinBorder: number;//x最小的边界
 	public static xMaxBorder: number;//x最大的边界
 	public static halfYBorder: number;//y的一半
@@ -53,9 +54,9 @@ export default class GameData extends cc.Component {
 	public static moveHorNext = 2;//左右移动跳板的生成间隔
 	public static horMoveSpeed = 200;//左右移动跳板移动的速度
 
-	public static touchBreakWeight = 0.2;//点击碎裂跳板的权重
-	public static touchBreakNext = 5;//点击碎裂跳板的生成间隔
-	public static touchBreakSpeed = 200;//点击碎裂跳板的裂开的速度
+	public static touchBreakWeight = 1000;//点击碎裂跳板的权重:0.2
+	public static touchBreakNext = 0;//点击碎裂跳板的生成间隔:5
+	public static touchBreakTime = 1;//点击碎裂跳板的裂开MoveBy的时间
 	//#endregion
 
 
@@ -64,6 +65,9 @@ export default class GameData extends cc.Component {
 
 	@property([cc.SpriteFrame])
 	public tileSprites: cc.SpriteFrame[] = [];
+
+	@property(cc.Prefab)
+	public touchBreakPrefab: cc.Prefab = null;
 
 	@property(cc.SpriteFrame)
 	public touchBreakLeftSprites: cc.SpriteFrame = null;
@@ -74,13 +78,15 @@ export default class GameData extends cc.Component {
 	onLoad() {
 		GameData.instance = this;
 		let world = cc.find("World").getComponent(cc.Canvas).designResolution;
-		GameData.xMaxBorder = world.width / 2;
+		GameData.XLength = world.width;
+		GameData.xMaxBorder = GameData.XLength / 2;
 		GameData.xMinBorder = -GameData.xMaxBorder;
 		GameData.halfYBorder = world.height / 2;
 		GameData.recoveryTileY += GameData.halfYBorder;
 
 		GameData.normalVerWeight += GameData.normalHorWeight;
 		GameData.moveHorWeight += GameData.normalVerWeight;
-		GameData.allTileWeight = GameData.moveHorWeight;
+		GameData.touchBreakWeight += GameData.moveHorWeight;
+		GameData.allTileWeight = GameData.touchBreakWeight;
 	}
 }
