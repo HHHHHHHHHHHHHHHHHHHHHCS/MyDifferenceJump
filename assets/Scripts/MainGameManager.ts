@@ -13,7 +13,6 @@ const { ccclass, property } = cc._decorator;
 export default class MainGameManager extends cc.Component {
 	public static Instance: MainGameManager;
 
-
 	public lastRecoveryY: number = Number.MIN_SAFE_INTEGER;//摄像机的最高Y
 
 	public mainUIManager: MainUIManager;
@@ -88,7 +87,7 @@ export default class MainGameManager extends cc.Component {
 			this.hardNumber = val;
 		}
 		else {
-			this.hardNumber *= GameData.hardBase;
+			this.hardNumber *= GameData.Instance.hardBase;
 		}
 		Player.Instance.AddHard(this.hardNumber);
 	}

@@ -25,13 +25,13 @@ export default class TouchBreakChild extends cc.Component {
 		this.collider.enabled = true;
 		this.moveDir = isLeft ? -1 : 1;
 		let gameData = GameData.Instance;
-		this.sprite.spriteFrame = isLeft ? gameData.touchBreakLeftSprites : gameData.touchBreakRightSprites;
+		this.sprite.spriteFrame = isLeft ? GameData.Instance.touchBreakLeftSprites : GameData.Instance.touchBreakRightSprites;
 		let x = tile.node.x + (isLeft ? this.halfX : -this.halfX);
 		this.node.setPosition(x, tile.node.y);
 		this.node.active = true;
 		this.node.runAction(
 			cc.sequence(
-				cc.moveBy(GameData.touchBreakTime, this.moveDir * GameData.XLength, 0),
+				cc.moveBy(GameData.Instance.touchBreakTime, this.moveDir * GameData.Instance.XLength, 0),
 				cc.callFunc(this.Recovery, this, this),
 			)
 		);

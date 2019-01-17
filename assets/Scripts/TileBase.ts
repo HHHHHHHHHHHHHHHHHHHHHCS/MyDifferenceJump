@@ -11,7 +11,6 @@ export const enum TileType {
 	Touch_Break,
 	Spring_Hor,
 	Frozen_Hor,
-
 }
 
 @ccclass
@@ -32,6 +31,8 @@ export default class TileBase extends cc.Component {
 	private clampDown: number;//下的限制
 	private moveDir: number;//左右移动方向 -1 左边,1 右边
 	private moveHorSpeed: number;//左右移动的速度
+	private isFrozen = false;//是否冻结
+	private touchCount = 0;//解冻的点击次数
 
 	public get TileType() {
 		return this.tileType;
@@ -39,11 +40,20 @@ export default class TileBase extends cc.Component {
 
 	protected onLoad() {
 		this.sprite = this.node.getChildByName("TileImage").getComponent(cc.Sprite);
+	}
 
+	protected onEnable() {
 		this.node.on(cc.Node.EventType.TOUCH_START, this.StartTouch, this);
 		this.node.on(cc.Node.EventType.TOUCH_MOVE, this.KeepTouch, this);
 		this.node.on(cc.Node.EventType.TOUCH_END, this.EndTouch, this);
 		this.node.on(cc.Node.EventType.TOUCH_CANCEL, this.EndTouch, this);
+	}
+
+	protected onDisable() {
+		this.node.off(cc.Node.EventType.TOUCH_START, this.StartTouch, this);
+		this.node.off(cc.Node.EventType.TOUCH_MOVE, this.KeepTouch, this);
+		this.node.off(cc.Node.EventType.TOUCH_END, this.EndTouch, this);
+		this.node.off(cc.Node.EventType.TOUCH_CANCEL, this.EndTouch, this);
 	}
 
 	protected update(dt: number) {
@@ -56,7 +66,9 @@ export default class TileBase extends cc.Component {
 
 	/** 初始化 */
 	public Init(type: TileType, pos: cc.Vec2) {
+		this.node.opacity = 255;//颜色重新设置,有时候抓住,被回收了颜色是暗淡的
 		this.isCatch = false;
+		this.isFrozen = false;
 		this.node.active = true;
 		this.tileType = type;
 		this.sprite.spriteFrame = GameData.Instance.tileSprites[this.tileType];
@@ -68,14 +80,19 @@ export default class TileBase extends cc.Component {
 	/** 设置数据 */
 	private SetParameter() {
 		switch (this.tileType) {
-			case TileType.Normal_Hor: {
-				this.clampUp = this.node.position.y + GameData.horMoveClamp;
-				this.clampDown = this.node.position.y - GameData.horMoveClamp;
+			case TileType.Normal_Ver: {
+				this.clampUp = this.node.position.y + GameData.Instance.horMoveClamp;
+				this.clampDown = this.node.position.y - GameData.Instance.horMoveClamp;
 				break;
 			}
 			case TileType.Move_Hor: {
 				this.moveDir = MyU.RandomNumber(-1, 1);
-				this.moveHorSpeed = GameData.horMoveSpeed * MainGameManager.Instance.HardNumber;
+				this.moveHorSpeed = GameData.Instance.horMoveSpeed * MainGameManager.Instance.HardNumber;
+				break;
+			}
+			case TileType.Frozen_Hor: {
+				this.isFrozen = true;
+				this.touchCount = GameData.Instance.frozenHorTouchCount;
 				break;
 			}
 		}
@@ -106,6 +123,19 @@ export default class TileBase extends cc.Component {
 			case TileType.Touch_Break: {
 				this.endTouchEvent = this.Touch_Break_End;
 				this.jumpEvent = this.DropDown;
+				break;
+			}
+			case TileType.Spring_Hor: {
+				this.startTouchEvent = this.Normal_Start;
+				this.keepTouchEvent = this.Normal_Hor_Keep;
+				this.endTouchEvent = this.Normal_Hor_End;
+				this.jumpEvent = this.DropDown;
+				break;
+			}
+			case TileType.Frozen_Hor: {
+				this.startTouchEvent = this.Normal_Start;
+				this.keepTouchEvent = this.Froze_Hor_Keep;
+				this.endTouchEvent = this.Froze_Hor_End;
 				break;
 			}
 		}
@@ -151,17 +181,28 @@ export default class TileBase extends cc.Component {
 
 	/** 回收,但是不停止运动 */
 	public RecoveryNoAction() {
-		//this.node.off(cc.Node.EventType.TOUCH_START, this.StartTouch, this);
-		//this.node.off(cc.Node.EventType.TOUCH_MOVE, this.KeepTouch, this);
-		//this.node.off(cc.Node.EventType.TOUCH_END, this.EndTouch, this);
-		//this.node.off(cc.Node.EventType.TOUCH_Cancel, this.EndTouch, this);
-
 		this.updateEvent = null;
 		this.startTouchEvent = null;
 		this.keepTouchEvent = null;
 		this.endTouchEvent = null;
 		this.jumpEvent = null;
 		this.isCatch = false;
+	}
+
+	/** 得到跳力的倍数,特殊跳板用 */
+	public GetForceScale(): number {
+		if (this.tileType == TileType.Spring_Hor) {
+			return GameData.Instance.springHorForceScale;
+		}
+		return 1;
+	}
+
+	/** 得到跳跃的方向,特殊跳板用 */
+	public GetJumpDir(): number {
+		if (this.tileType == TileType.Spring_Hor) {
+			return 0;
+		}
+		return null;
 	}
 
 	//#region Normal_Hor_Tile Normal_Ver_Tile
@@ -174,7 +215,7 @@ export default class TileBase extends cc.Component {
 	private Normal_Hor_Keep(event: cc.Event.EventTouch) {
 		let delta = event.touch.getDelta();
 		let will = this.node.x + delta.x;
-		this.node.x = MyU.Clamp(will, GameData.xMinBorder, GameData.xMaxBorder);
+		this.node.x = MyU.Clamp(will, GameData.Instance.xMinBorder, GameData.Instance.xMaxBorder);
 	}
 
 	private Normal_Ver_Keep(event: cc.Event.EventTouch) {
@@ -197,13 +238,20 @@ export default class TileBase extends cc.Component {
 		if (!this.isCatch) {
 			let delta = this.moveDir * this.moveHorSpeed * dt;
 			let will = this.node.x + delta;
-			this.node.x = MyU.Clamp(will, GameData.xMinBorder, GameData.xMaxBorder);
+			this.node.x = MyU.Clamp(will, GameData.Instance.xMinBorder, GameData.Instance.xMaxBorder);
 
-			if (this.node.x == GameData.xMinBorder
-				|| this.node.x == GameData.xMaxBorder) {
+			if (this.node.x == GameData.Instance.xMinBorder
+				|| this.node.x == GameData.Instance.xMaxBorder) {
 				this.moveDir *= -1;
 			}
 		}
+	}
+
+	/** 掉落 */
+	private DropDown() {
+		//就算是掉下去,也不着急回收,按照index回收
+		this.node.runAction(cc.moveBy(0.5, 0, -500));
+		this.RecoveryNoAction();
 	}
 
 	//#endregion
@@ -217,12 +265,29 @@ export default class TileBase extends cc.Component {
 		}
 	}
 
-	/** 掉落 */
-	private DropDown() {
-		//就算是掉下去,也不着急回收,按照index回收
-		this.node.runAction(cc.moveBy(0.5, 0, -500));
-		this.RecoveryNoAction();
+	//#endregion
+
+	//#region Spring_Hor
+
+	//#endregion
+
+	//#region Froze_Hor
+
+	private Froze_Hor_Keep(event: cc.Event.EventTouch) {
+		if (!this.isFrozen) {
+			this.Normal_Hor_Keep(event);
+		}
 	}
 
+	private Froze_Hor_End() {
+		if (this.isFrozen) {
+			this.touchCount--;
+			if (this.touchCount == 0) {
+				this.isFrozen = false;
+				this.sprite.spriteFrame = GameData.Instance.tileSprites[TileType.Normal_Hor];
+			}
+		}
+		this.Normal_Hor_End();
+	}
 	//#endregion
 }

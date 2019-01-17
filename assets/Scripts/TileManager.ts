@@ -2,7 +2,6 @@ import TileBase, { TileType } from "./TileBase";
 import ObjectPool from "./ObjectPool";
 import GameData from "./GameData";
 import MyU from "./My/MyU";
-import Player from "./Player";
 import MainGameManager from "./MainGameManager";
 import TouchBreakChild from "./TouchBreakChild";
 
@@ -16,9 +15,11 @@ export default class TileManager {
 	private platform: cc.Node;
 
 	private currentTileIndex: number = 0;
-	private lastNormalVerIndex: number = GameData.normalVerNext;
-	private lastMoveHorIndex: number = GameData.moveHorNext;
-	private lastTouchBreakIndex: number = GameData.touchBreakNext;
+	private lastNormalVerIndex: number = GameData.Instance.normalVerNext;
+	private lastMoveHorIndex: number = GameData.Instance.moveHorNext;
+	private lastTouchBreakIndex: number = GameData.Instance.touchBreakNext;
+	private lastSpringHorIndex: number = GameData.Instance.springHorNext;
+	private lastFrozenHorIndex: number = GameData.Instance.frozenHorNext;
 
 	public constructor() {
 		this.nowTilesList = [];
@@ -26,7 +27,7 @@ export default class TileManager {
 		this.platform = cc.find("World/Platform");
 		this.tilePool = new ObjectPool(GameData.Instance.tilePrefab, TileBase, 20, parent);
 		this.touchBreakPool = new ObjectPool(GameData.Instance.touchBreakPrefab, TouchBreakChild, 0, parent);
-		this.currentTileY = GameData.startTileY;
+		this.currentTileY = GameData.Instance.startTileY;
 	}
 
 	public OnStart() {
@@ -42,36 +43,45 @@ export default class TileManager {
 		let type = this.CheckSpawnTileType(this.GetRandomTileType());
 		switch (type) {
 			case TileType.Normal_Ver: {
-				this.currentTileY += GameData.normalVerNextTileY;
+				this.currentTileY += GameData.Instance.normalVerNextTileY;
 				break;
 			}
 			default: {
-				this.currentTileY += GameData.defaultNextTileY;
+				this.currentTileY += GameData.Instance.defaultNextTileY;
 				break;
 			}
 		}
-		let pos = new cc.Vec2(MyU.Random(GameData.xMinBorder, GameData.xMaxBorder), this.currentTileY);
+		let pos = new cc.Vec2(MyU.Random(GameData.Instance.xMinBorder, GameData.Instance.xMaxBorder), this.currentTileY);
 		temp.Init(type, pos);
 		this.nowTilesList.push(temp);
 	}
 
 	/** 获得随机跳板 */
 	public GetRandomTileType(): TileType {
-		let weight = MyU.Random(0, GameData.allTileWeight);
-		if (weight <= GameData.normalHorWeight) {
+		let weight = MyU.Random(0, GameData.Instance.allTileWeight);
+
+		if (weight <= GameData.Instance.normalHorWeight) {
 			return TileType.Normal_Hor;
 		}
 
-		if (weight <= GameData.normalVerWeight) {
+		if (weight <= GameData.Instance.normalVerWeight) {
 			return TileType.Normal_Ver;
 		}
 
-		if (weight <= GameData.moveHorWeight) {
+		if (weight <= GameData.Instance.moveHorWeight) {
 			return TileType.Move_Hor;
 		}
 
-		if (weight <= GameData.touchBreakWeight) {
+		if (weight <= GameData.Instance.touchBreakWeight) {
 			return TileType.Touch_Break;
+		}
+
+		if (weight <= GameData.Instance.springHorWeight) {
+			return TileType.Spring_Hor;
+		}
+
+		if (weight <= GameData.Instance.frozenHorWeight) {
+			return TileType.Frozen_Hor;
 		}
 
 		return TileType.Normal_Hor;
@@ -83,21 +93,35 @@ export default class TileManager {
 		switch (type) {
 			case TileType.Normal_Ver: {
 				if (this.currentTileIndex >= this.lastNormalVerIndex) {
-					this.lastNormalVerIndex = this.currentTileIndex + GameData.normalVerNext;
+					this.lastNormalVerIndex = this.currentTileIndex + GameData.Instance.normalVerNext;
 					return type;
 				}
 				return TileType.Normal_Hor;
 			}
 			case TileType.Move_Hor: {
 				if (this.currentTileIndex >= this.lastMoveHorIndex) {
-					this.lastMoveHorIndex = this.currentTileIndex + GameData.moveHorNext;
+					this.lastMoveHorIndex = this.currentTileIndex + GameData.Instance.moveHorNext;
 					return type;
 				}
 				return TileType.Normal_Hor;
 			}
 			case TileType.Touch_Break: {
 				if (this.currentTileIndex >= this.lastTouchBreakIndex) {
-					this.lastTouchBreakIndex = this.currentTileIndex + GameData.touchBreakNext;
+					this.lastTouchBreakIndex = this.currentTileIndex + GameData.Instance.touchBreakNext;
+					return type;
+				}
+				return TileType.Normal_Hor;
+			}
+			case TileType.Spring_Hor: {
+				if (this.currentTileIndex >= this.lastSpringHorIndex) {
+					this.lastSpringHorIndex = this.currentTileIndex + GameData.Instance.springHorNext;
+					return type;
+				}
+				return TileType.Normal_Hor;
+			}
+			case TileType.Spring_Hor: {
+				if (this.currentTileIndex >= this.lastFrozenHorIndex) {
+					this.lastFrozenHorIndex = this.currentTileIndex + GameData.Instance.frozenHorNext;
 					return type;
 				}
 				return TileType.Normal_Hor;
@@ -110,7 +134,7 @@ export default class TileManager {
 	/** 回收 */
 	public OnRecovery(cameraY: number) {
 
-		let recoveryY = cameraY - GameData.recoveryTileY;
+		let recoveryY = cameraY - GameData.Instance.recoveryTileY;
 		let removeIndex = -1;
 
 		//摧毁底部平台

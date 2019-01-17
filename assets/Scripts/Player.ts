@@ -1,7 +1,7 @@
 import GameData, { Tags } from "./GameData";
 import MyU from "./My/MyU";
 import MainGameManager from "./MainGameManager";
-import TileBase from "./TileBase";
+import TileBase, { TileType } from "./TileBase";
 import TouchBreakChild from "./TouchBreakChild";
 
 const { ccclass, property } = cc._decorator;
@@ -15,7 +15,7 @@ export default class Player extends cc.Component {
 		return Player.instance;
 	}
 
-	private static playerDieY: number = 60;//玩家死亡的Y
+	private playerDieY: number;//玩家死亡的Y
 
 	/** 左右移动的速度 */
 	@property(cc.Float)
@@ -45,7 +45,7 @@ export default class Player extends cc.Component {
 
 	onLoad() {
 		Player.instance = this;
-		Player.playerDieY += GameData.halfYBorder;
+		this.playerDieY = GameData.Instance.halfYBorder + this.node.height / 2;
 		cc.director.getCollisionManager().enabled = true;
 		this.collider = this.getComponent(cc.BoxCollider);
 		this.lastPlayerY = this.node.y;
@@ -62,11 +62,11 @@ export default class Player extends cc.Component {
 		pos.y += this.nowVerSpeed * dt;
 		this.node.position = pos;
 
-		if (this.node.position.x < GameData.xMinBorder) {
-			this.node.x = GameData.xMaxBorder;
+		if (this.node.position.x < GameData.Instance.xMinBorder) {
+			this.node.x = GameData.Instance.xMaxBorder;
 		}
-		else if (this.node.position.x > GameData.xMaxBorder) {
-			this.node.x = GameData.xMinBorder;
+		else if (this.node.position.x > GameData.Instance.xMaxBorder) {
+			this.node.x = GameData.Instance.xMinBorder;
 		}
 
 		this.UpdateScore();
@@ -77,7 +77,7 @@ export default class Player extends cc.Component {
 	}
 
 	onCollisionEnter(other: cc.Collider, self: cc.Collider) {
-		if (other.tag == Tags.Tile||other.tag == Tags.TileChild) {
+		if (other.tag == Tags.Tile || other.tag == Tags.TileChild) {
 			if (this.nowVerSpeed <= 0) {
 				this.Jump(other);
 			}
@@ -85,7 +85,7 @@ export default class Player extends cc.Component {
 	}
 
 	onCollisionStay(other, self) {
-		if (other.tag == Tags.Tile||other.tag == Tags.TileChild) {
+		if (other.tag == Tags.Tile || other.tag == Tags.TileChild) {
 			if (this.nowVerSpeed <= 0) {
 				this.Jump(other);
 			}
@@ -111,26 +111,32 @@ export default class Player extends cc.Component {
 
 	/** 跳跃 */
 	public Jump(tile?: cc.Collider, jumpDir?: number): void {
-		this.nowVerSpeed = this.hardJumpForce;
-		if (jumpDir) {
-			this.moveDir = jumpDir;
-		}
-		else {
-			this.moveDir = MyU.RandomNumber(-1, 1);
-			this.node.scaleX = this.moveDir;
-			this.nowHorSpeed = MyU.Random(0, this.hardHorSpeed);
-		}
-
+		var jumpForce = 1;
 		if (tile) {
 			if (tile.tag == Tags.Tile) {
 				let tileCom = tile.node.parent.getComponent(TileBase);
 				if (tileCom) {
 					tileCom.DoJump();
+					jumpForce = tileCom.GetForceScale();
+					jumpDir = tileCom.GetJumpDir();
 				}
 			}
 			else if (tile.tag == Tags.TileChild) {
 				tile.node.getComponent(TouchBreakChild).DoJump();
 			}
+		}
+
+
+		this.nowVerSpeed = this.hardJumpForce * jumpForce;
+		
+		if (jumpDir!=null) {
+			this.moveDir = jumpDir;
+			this.nowHorSpeed=0;
+		}
+		else {
+			this.moveDir = MyU.RandomNumber(-1, 1);
+			this.node.scaleX = this.moveDir;
+			this.nowHorSpeed = MyU.Random(0, this.hardHorSpeed);
 		}
 	}
 
@@ -144,7 +150,7 @@ export default class Player extends cc.Component {
 
 	/** 检测死亡 */
 	public CheckDie(): boolean {
-		let dieY = MainGameManager.Instance.lastRecoveryY - Player.playerDieY;
+		let dieY = MainGameManager.Instance.lastRecoveryY - this.playerDieY;
 		if (dieY > this.node.y) {
 			this.GameOver();
 			return true;
