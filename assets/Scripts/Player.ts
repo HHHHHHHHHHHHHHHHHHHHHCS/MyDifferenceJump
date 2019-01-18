@@ -3,6 +3,7 @@ import MyU from "./My/MyU";
 import MainGameManager from "./MainGameManager";
 import TileBase, { TileType } from "./TileBase";
 import TouchBreakChild from "./TouchBreakChild";
+import ItemManager from "./ItemManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -39,9 +40,12 @@ export default class Player extends cc.Component {
 	private nowVerSpeed: number;//当前的垂直的速度
 	private moveDir: number;//当前移动的方向 左:-1 中:0 右:1
 
-	private hardDownForce: number;
-	private hardJumpForce: number;
-	private hardHorSpeed: number;
+	private hardDownForce: number;//难度:掉落速度
+	private hardJumpForce: number;//难度:跳跃速度
+	private hardHorSpeed: number;//难度:左右速度
+
+	private hatUsed: cc.Node;//帽子使用
+	private rocketUsed: cc.Node;//火箭使用
 
 	onLoad() {
 		Player.instance = this;
@@ -50,6 +54,8 @@ export default class Player extends cc.Component {
 		this.collider = this.getComponent(cc.BoxCollider);
 		this.lastPlayerY = this.node.y;
 		this.scoreOffset = -this.lastPlayerY;
+		this.hatUsed = cc.find("Hat_Used", this.node);
+		this.rocketUsed = cc.find("Rocket_Used", this.node);
 	}
 
 	update(dt: number) {
@@ -77,24 +83,30 @@ export default class Player extends cc.Component {
 	}
 
 	onCollisionEnter(other: cc.Collider, self: cc.Collider) {
-		if (other.tag == Tags.Tile || other.tag == Tags.TileChild) {
-			if (this.nowVerSpeed <= 0) {
+		this.CollisionEvent(other, self);
+	}
+
+	private CollisionEvent(other: cc.Collider, self: cc.Collider) {
+		if (this.nowVerSpeed <= 0) {
+			if (other.tag == Tags.Tile || other.tag == Tags.TileChild) {
 				this.Jump(other);
+			}
+			if (other.tag == Tags.Item) {
+				ItemManager.GetItem(this, other);
 			}
 		}
 	}
 
-	onCollisionStay(other, self) {
-		if (other.tag == Tags.Tile || other.tag == Tags.TileChild) {
-			if (this.nowVerSpeed <= 0) {
-				this.Jump(other);
-			}
-		}
+
+	/*
+	onCollisionStay(other: cc.Collider, self: cc.Collider) {
+		this.CollisionEvent(other, self);
 	}
 
 	onCollisionExit(other, self) {
 
 	}
+	*/
 
 	/** 添加难度 */
 	public AddHard(val: number) {
@@ -128,10 +140,10 @@ export default class Player extends cc.Component {
 
 
 		this.nowVerSpeed = this.hardJumpForce * jumpForce;
-		
-		if (jumpDir!=null) {
+
+		if (jumpDir != null) {
 			this.moveDir = jumpDir;
-			this.nowHorSpeed=0;
+			this.nowHorSpeed = 0;
 		}
 		else {
 			this.moveDir = MyU.RandomNumber(-1, 1);

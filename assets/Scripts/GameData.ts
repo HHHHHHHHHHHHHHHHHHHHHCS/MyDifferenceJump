@@ -4,6 +4,7 @@ export const enum Tags {
 	Player = 0,
 	Tile,
 	TileChild,
+	Item,
 }
 
 export const enum GameState {
@@ -65,6 +66,18 @@ export default class GameData extends cc.Component {
 	public frozenHorTouchCount = 3;//冻结碎裂跳板的生成间隔
 	//#endregion
 
+	//#region 物品参数-----------
+	public hatWeight = 0.1;//帽子出现的权重
+	public hatNext = 60;//帽子的出现间隔
+	public hatFlySpeed = 300;//帽子的飞行速度
+	public halfFlyTime = 1.5;//帽子的飞行时间
+
+	public rocketWeight = 0.05;//火箭出现的权重
+	public rocketNext = 100;//火箭的出现间隔
+	public rocketFlySpeed = 450;//火箭的飞行速度
+	public rocketFlyTime = 2;//火箭的飞行时间
+
+	//#endregion
 
 	@property(cc.Prefab)
 	public tilePrefab: cc.Prefab = null;
@@ -80,6 +93,9 @@ export default class GameData extends cc.Component {
 
 	@property(cc.SpriteFrame)
 	public touchBreakRightSprites: cc.SpriteFrame = null;
+
+	@property([cc.SpriteFrame])
+	public itemSprites: cc.SpriteFrame[] = [];
 
 	onLoad() {
 		GameData.Instance = this;

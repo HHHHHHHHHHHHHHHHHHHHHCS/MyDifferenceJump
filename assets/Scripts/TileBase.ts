@@ -1,6 +1,7 @@
 import GameData from "./GameData";
 import MyU from "./My/MyU";
 import MainGameManager from "./MainGameManager";
+import ItemBase from "./ItemBase";
 
 const { ccclass, property } = cc._decorator;
 
@@ -15,7 +16,6 @@ export const enum TileType {
 
 @ccclass
 export default class TileBase extends cc.Component {
-
 	private tileType: TileType;
 
 	private sprite: cc.Sprite;
@@ -34,8 +34,20 @@ export default class TileBase extends cc.Component {
 	private isFrozen = false;//是否冻结
 	private touchCount = 0;//解冻的点击次数
 
-	public get TileType() {
+	public bindItem: ItemBase;//绑定的物体
+
+	/** 是否绑定 */
+	public get IsBind(): boolean {
+		return this.bindItem == null;
+	}
+
+	/** 物体类型 */
+	public get TileType(): TileType {
 		return this.tileType;
+	}
+
+	public get CenterUpPos(): cc.Vec2 {
+		return new cc.Vec2(this.node.position.x, this.node.position.y + this.node.y / 2);
 	}
 
 	protected onLoad() {
@@ -69,12 +81,13 @@ export default class TileBase extends cc.Component {
 		this.node.opacity = 255;//颜色重新设置,有时候抓住,被回收了颜色是暗淡的
 		this.isCatch = false;
 		this.isFrozen = false;
-		this.node.active = true;
 		this.tileType = type;
 		this.sprite.spriteFrame = GameData.Instance.tileSprites[this.tileType];
 		this.node.position = pos;
 		this.SetParameter();
 		this.RegisterEvent();
+		this.node.active = true;
+
 	}
 
 	/** 设置数据 */
