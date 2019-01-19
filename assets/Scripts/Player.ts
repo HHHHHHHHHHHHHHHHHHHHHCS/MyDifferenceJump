@@ -44,10 +44,14 @@ export default class Player extends cc.Component {
 	private hardJumpForce: number;//难度:跳跃速度
 	private hardHorSpeed: number;//难度:左右速度
 
+	private isFly: boolean;//是否在飞行状态
 	private hatUsed: cc.Node;//帽子使用
 	private rocketUsed: cc.Node;//火箭使用
+	private flyTimer: number;//飞行的倒计时
+	private flySpeed: number;//飞行的速度
 
-	onLoad() {
+
+	public OnInit() {
 		Player.instance = this;
 		this.playerDieY = GameData.Instance.halfYBorder + this.node.height / 2;
 		cc.director.getCollisionManager().enabled = true;
@@ -56,29 +60,45 @@ export default class Player extends cc.Component {
 		this.scoreOffset = -this.lastPlayerY;
 		this.hatUsed = cc.find("Hat_Used", this.node);
 		this.rocketUsed = cc.find("Rocket_Used", this.node);
+		return this;
 	}
 
-	update(dt: number) {
-		if (!this.isPlaying) {
+	public OnUpdate(dt: number) {
+
+		if (this.UpdateFly(dt)) {
+			this.UpdateScore();
 			return;
 		}
+
+		this.UpdateMove(dt);
+		this.UpdateScore();
+
+		if (this.CheckDie()) {
+			return;
+		}
+	}
+
+	/** 更新移动 */
+	private UpdateMove(dt: number) {
 		this.nowVerSpeed -= this.hardDownForce * dt;
 		let pos = this.node.position;
 		pos.x += this.moveDir * this.nowHorSpeed * dt;
 		pos.y += this.nowVerSpeed * dt;
 		this.node.position = pos;
 
+		/*
 		if (this.node.position.x < GameData.Instance.xMinBorder) {
 			this.node.x = GameData.Instance.xMaxBorder;
 		}
 		else if (this.node.position.x > GameData.Instance.xMaxBorder) {
 			this.node.x = GameData.Instance.xMinBorder;
 		}
-
-		this.UpdateScore();
-
-		if (this.CheckDie()) {
-			return;
+		*/
+		if (this.node.position.x <= GameData.Instance.xMinBorder) {
+			this.moveDir = 1;
+		}
+		else if (this.node.position.x >= GameData.Instance.xMaxBorder) {
+			this.moveDir = -1;
 		}
 	}
 
@@ -87,12 +107,16 @@ export default class Player extends cc.Component {
 	}
 
 	private CollisionEvent(other: cc.Collider, self: cc.Collider) {
+		if (this.isFly) {
+			return;
+		}
+
 		if (this.nowVerSpeed <= 0) {
 			if (other.tag == Tags.Tile || other.tag == Tags.TileChild) {
 				this.Jump(other);
 			}
 			if (other.tag == Tags.Item) {
-				ItemManager.GetItem(this, other);
+				MainGameManager.Instance.itemManager.GetItem(this, other);
 			}
 		}
 	}
@@ -122,15 +146,16 @@ export default class Player extends cc.Component {
 	}
 
 	/** 跳跃 */
-	public Jump(tile?: cc.Collider, jumpDir?: number): void {
-		var jumpForce = 1;
+	public Jump(tile?: cc.Collider, jumpDir?: number, jumpForce?: number): void {
 		if (tile) {
 			if (tile.tag == Tags.Tile) {
 				let tileCom = tile.node.parent.getComponent(TileBase);
 				if (tileCom) {
 					tileCom.DoJump();
 					jumpForce = tileCom.GetForceScale();
-					jumpDir = tileCom.GetJumpDir();
+					if (jumpForce != null) {
+						jumpDir = tileCom.GetJumpDir();
+					}
 				}
 			}
 			else if (tile.tag == Tags.TileChild) {
@@ -138,6 +163,9 @@ export default class Player extends cc.Component {
 			}
 		}
 
+		if (jumpForce == null) {
+			jumpForce = 1;
+		}
 
 		this.nowVerSpeed = this.hardJumpForce * jumpForce;
 
@@ -175,5 +203,42 @@ export default class Player extends cc.Component {
 		this.collider.enabled = false;
 		this.isPlaying = false;
 		MainGameManager.Instance.GameOver();
+	}
+
+	/** 执行飞行 */
+	public DoFly(isHat: boolean, flySpeed: number, flyTime: number) {
+		this.isFly = true;
+		if (isHat) {
+			this.hatUsed.active = true;
+		}
+		else {
+			this.rocketUsed.active = true;
+		}
+		this.flyTimer = flyTime;
+		this.flySpeed = flySpeed;
+	}
+
+	/** 更新飞行 */
+	private UpdateFly(dt: number) {
+		if (this.isFly) {
+			if (this.flyTimer > 0) {
+				this.node.y += this.flySpeed * dt;
+				this.flyTimer -= dt;
+			}
+
+			if (this.flyTimer <= 0) {
+				this.EndFly();
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/** 结束飞行 */
+	private EndFly() {
+		this.isFly = false;
+		this.hatUsed.active = false;
+		this.rocketUsed.active = false;
+		this.Jump(null, 0);
 	}
 }

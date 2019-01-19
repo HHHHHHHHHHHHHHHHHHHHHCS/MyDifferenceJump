@@ -5,6 +5,7 @@ import MyU from "./My/MyU";
 import MainUIManager from "./MainUIManager";
 import BackgroundManager from "./BackgroundManager";
 import GameData from "./GameData";
+import ItemManager from "./ItemManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -15,8 +16,10 @@ export default class MainGameManager extends cc.Component {
 
 	public lastRecoveryY: number = Number.MIN_SAFE_INTEGER;//摄像机的最高Y
 
+	public player: Player;
 	public mainUIManager: MainUIManager;
 	public tileManager: TileManager;
+	public itemManager: ItemManager;
 	public backgroundManager: BackgroundManager;
 
 	public isPlaying: boolean;
@@ -32,9 +35,15 @@ export default class MainGameManager extends cc.Component {
 	/** 游戏开始的时候 */
 	onLoad() {
 		MainGameManager.Instance = this;
+		this.player = cc.find("World/Player").getComponent(Player).OnInit();
 		this.mainUIManager = cc.find("World/UIRoot").getComponent(MainUIManager);
 		this.backgroundManager = cc.find("World/Backgrounds").getComponent(BackgroundManager);
 		this.tileManager = new TileManager();
+		this.itemManager = new ItemManager();
+
+		this.tileManager.createItemEvent.push((tile) => { this.itemManager.CreateItem(tile); });
+
+		this.tileManager.recoveryItemEvent.push((tile) => { this.itemManager.RecoveryItem(tile); });
 	}
 
 	/** 第一帧开始 */
@@ -44,6 +53,15 @@ export default class MainGameManager extends cc.Component {
 		this.AddHard(1);
 		this.tileManager.OnStart();
 		this.node.on(cc.Node.EventType.TOUCH_START, this.StartGame, this);
+	}
+
+	/** 每桢事件 */
+	update(dt: number) {
+		if (this.gameState == GameState.Playing) {
+			this.player.OnUpdate(dt);
+			this.tileManager.OnUpdate(dt);
+			this.itemManager.OnUpdate(dt);
+		}
 	}
 
 	/** 游戏开始 */

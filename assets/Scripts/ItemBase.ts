@@ -1,11 +1,13 @@
 import Player from "./Player";
 import MyU from "./My/MyU";
 import TileBase from "./TileBase";
+import GameData from "./GameData";
 
 const { ccclass, property } = cc._decorator;
 
 export const enum ItemType {
-	Hat = 0,
+	None = 0,
+	Hat,
 	Rocket,
 	Frozen,
 	Spring,
@@ -38,9 +40,11 @@ export default class ItemBase extends cc.Component {
 
 	}
 
+	/** 初始化 */
 	public OnInit(type: ItemType, tile: TileBase) {
 		this.itemType = type;
 		this.bindTile = tile;
+		tile.bindItem = this;
 		this.HideAll();
 		this.UpdatePos();
 		switch (type) {
@@ -72,14 +76,26 @@ export default class ItemBase extends cc.Component {
 		this.node.active = true;
 	}
 
+	/** 更新位置 */
 	public UpdatePos() {
 		this.node.position = this.bindTile.CenterUpPos;
 	}
 
+	/** 玩家吃到了物品,执行事件 */
 	public DoItem(player: Player) {
-
+		switch (this.itemType) {
+			case ItemType.Hat: {
+				player.DoFly(true, GameData.Instance.hatFlySpeed, GameData.Instance.hatFlyTime);
+				break;
+			}
+			case ItemType.Rocket: {
+				player.DoFly(false, GameData.Instance.rocketFlySpeed, GameData.Instance.rocketFlyTime);
+				break;
+			}
+		}
 	}
 
+	/** 隐藏全部图片 */
 	public HideAll() {
 		this.hat.active = false;
 		this.rocket.active = false;
@@ -89,5 +105,9 @@ export default class ItemBase extends cc.Component {
 		this.magnifier.active = false;
 	}
 
-
+	/** 回收 */
+	public Recovery() {
+		this.bindTile.bindItem = null;
+		this.bindTile = null;
+	}
 }

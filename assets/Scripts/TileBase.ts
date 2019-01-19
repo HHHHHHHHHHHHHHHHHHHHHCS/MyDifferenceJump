@@ -16,6 +16,8 @@ export const enum TileType {
 
 @ccclass
 export default class TileBase extends cc.Component {
+	private static halfHeigh: number;
+
 	private tileType: TileType;
 
 	private sprite: cc.Sprite;
@@ -47,7 +49,7 @@ export default class TileBase extends cc.Component {
 	}
 
 	public get CenterUpPos(): cc.Vec2 {
-		return new cc.Vec2(this.node.position.x, this.node.position.y + this.node.y / 2);
+		return new cc.Vec2(this.node.position.x, this.node.position.y + TileBase.halfHeigh);
 	}
 
 	protected onLoad() {
@@ -68,16 +70,17 @@ export default class TileBase extends cc.Component {
 		this.node.off(cc.Node.EventType.TOUCH_CANCEL, this.EndTouch, this);
 	}
 
-	protected update(dt: number) {
-		if (MainGameManager.Instance.isPlaying) {
-			if (this.updateEvent) {
-				this.updateEvent(dt);
-			}
+	public OnUpdate(dt: number) {
+		if (this.updateEvent) {
+			this.updateEvent(dt);
 		}
 	}
 
 	/** 初始化 */
 	public Init(type: TileType, pos: cc.Vec2) {
+		if (TileBase.halfHeigh == undefined) {
+			TileBase.halfHeigh = this.sprite.node.height / 2;
+		}
 		this.node.opacity = 255;//颜色重新设置,有时候抓住,被回收了颜色是暗淡的
 		this.isCatch = false;
 		this.isFrozen = false;

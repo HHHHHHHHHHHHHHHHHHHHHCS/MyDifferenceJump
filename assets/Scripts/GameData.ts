@@ -67,14 +67,17 @@ export default class GameData extends cc.Component {
 	//#endregion
 
 	//#region 物品参数-----------
-	public hatWeight = 0.1;//帽子出现的权重
-	public hatNext = 60;//帽子的出现间隔
-	public hatFlySpeed = 300;//帽子的飞行速度
-	public halfFlyTime = 1.5;//帽子的飞行时间
+	public allItemWeight: number;//全部物品的权重
+	public itemNoneWeight = 1;//物品不出的权重
 
-	public rocketWeight = 0.05;//火箭出现的权重
+	public hatWeight = 0.05;//帽子出现的权重
+	public hatNext = 60;//帽子的出现间隔
+	public hatFlySpeed = 1000;//帽子的飞行速度
+	public hatFlyTime = 1.5;//帽子的飞行时间
+
+	public rocketWeight = 0.01;//火箭出现的权重
 	public rocketNext = 100;//火箭的出现间隔
-	public rocketFlySpeed = 450;//火箭的飞行速度
+	public rocketFlySpeed = 1500;//火箭的飞行速度
 	public rocketFlyTime = 2;//火箭的飞行时间
 
 	//#endregion
@@ -94,8 +97,8 @@ export default class GameData extends cc.Component {
 	@property(cc.SpriteFrame)
 	public touchBreakRightSprites: cc.SpriteFrame = null;
 
-	@property([cc.SpriteFrame])
-	public itemSprites: cc.SpriteFrame[] = [];
+	@property(cc.Prefab)
+	public itemPrefab: cc.Prefab = null;
 
 	onLoad() {
 		GameData.Instance = this;
@@ -112,5 +115,9 @@ export default class GameData extends cc.Component {
 		this.springHorWeight += this.touchBreakWeight;
 		this.frozenHorWeight += this.springHorWeight;
 		this.allTileWeight = this.frozenHorWeight;
+
+		this.hatWeight += this.itemNoneWeight;
+		this.rocketWeight += this.hatWeight;
+		this.allItemWeight = this.rocketWeight;
 	}
 }
