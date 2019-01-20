@@ -2,6 +2,7 @@ import Player from "./Player";
 import MyU from "./My/MyU";
 import TileBase from "./TileBase";
 import GameData from "./GameData";
+import MainGameManager from "./MainGameManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -85,11 +86,23 @@ export default class ItemBase extends cc.Component {
 	public DoItem(player: Player) {
 		switch (this.itemType) {
 			case ItemType.Hat: {
-				player.DoFly(true, GameData.Instance.hatFlySpeed, GameData.Instance.hatFlyTime);
+				this.EatHat();
 				break;
 			}
 			case ItemType.Rocket: {
-				player.DoFly(false, GameData.Instance.rocketFlySpeed, GameData.Instance.rocketFlyTime);
+				this.EatRocket();
+				break;
+			}
+			case ItemType.Frozen: {
+				this.EatFrozen();
+				break;
+			}
+			case ItemType.Spring: {
+				this.EatSpring();
+				break;
+			}
+			case ItemType.Magnifier: {
+				this.EatMagnifier();
 				break;
 			}
 		}
@@ -110,4 +123,61 @@ export default class ItemBase extends cc.Component {
 		this.bindTile.bindItem = null;
 		this.bindTile = null;
 	}
+
+	/** 吃到帽子 */
+	public EatHat() {
+		let player = Player.Instance;
+		let gameData = GameData.Instance;
+		let itemManager = MainGameManager.Instance.itemManager;
+
+		player.DoFly(true, gameData.hatFlySpeed);
+		itemManager.SetItemTime(gameData.hatFlyTime);
+		itemManager.itemEndEvent = () => { player.EndFly(); };
+	}
+
+	/** 吃到火箭 */
+	public EatRocket() {
+		let player = Player.Instance;
+		let gameData = GameData.Instance;
+		let itemManager = MainGameManager.Instance.itemManager;
+
+		player.DoFly(false, gameData.rocketFlySpeed);
+		itemManager.SetItemTime(gameData.rocketFlyTime);
+		itemManager.itemEndEvent = () => { player.EndFly(); };
+	}
+
+	/** 迟到了冻结 */
+	public EatFrozen() {
+		let itemManager = MainGameManager.Instance.itemManager;
+		let gameData = GameData.Instance;
+
+		itemManager.isFrozen = true;
+		itemManager.SetItemTime(gameData.rocketFlyTime);
+		itemManager.itemEndEvent = () => { itemManager.isFrozen = false; };
+	}
+
+
+	/** 吃到了垂直跳 */
+	public EatSpring() {
+		let itemManager = MainGameManager.Instance.itemManager;
+		itemManager.isSpring = true;
+		itemManager.SetItemTime(GameData.Instance.springTime);
+		itemManager.itemEndEvent = () => {
+			itemManager.isSpring = false;
+		};
+	}
+
+	/** 吃到了放大 */
+	public EatMagnifier() {
+		let itemManager = MainGameManager.Instance.itemManager;
+		let tileManager = MainGameManager.Instance.tileManager;
+		itemManager.isMagnifier = true;
+		itemManager.SetItemTime(GameData.Instance.magnifierTime);
+		tileManager.MagnifierTilesScale();
+		itemManager.itemEndEvent = () => {
+			itemManager.isMagnifier = false;
+			tileManager.ResetTilesScale();
+		};
+	}
+
 }

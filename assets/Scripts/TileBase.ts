@@ -21,6 +21,10 @@ export default class TileBase extends cc.Component {
 	private tileType: TileType;
 
 	private sprite: cc.Sprite;
+	private collider: cc.BoxCollider;
+
+	private xMinBorder: number;//x的最小边界
+	private xMaxBorder: number;//x的最大边界
 
 	private updateEvent: Function;//update事件
 	private startTouchEvent: Function;//开始触摸事件
@@ -54,6 +58,11 @@ export default class TileBase extends cc.Component {
 
 	protected onLoad() {
 		this.sprite = this.node.getChildByName("TileImage").getComponent(cc.Sprite);
+		this.collider = this.sprite.getComponent(cc.BoxCollider);
+		this.ChangeScale(1, true);
+		if (TileBase.halfHeigh == undefined) {
+			TileBase.halfHeigh = this.sprite.node.height / 2;
+		}
 	}
 
 	protected onEnable() {
@@ -78,14 +87,15 @@ export default class TileBase extends cc.Component {
 
 	/** 初始化 */
 	public Init(type: TileType, pos: cc.Vec2) {
-		if (TileBase.halfHeigh == undefined) {
-			TileBase.halfHeigh = this.sprite.node.height / 2;
-		}
+		let itemManager = MainGameManager.Instance.itemManager;
+		let gameData = GameData.Instance;
+		this.ChangeScale(itemManager.isMagnifier ? gameData.magnifierScale : 1);
 		this.node.opacity = 255;//颜色重新设置,有时候抓住,被回收了颜色是暗淡的
 		this.isCatch = false;
 		this.isFrozen = false;
 		this.tileType = type;
-		this.sprite.spriteFrame = GameData.Instance.tileSprites[this.tileType];
+		this.sprite.spriteFrame = gameData.tileSprites[this.tileType];
+		pos.x = MyU.Random(this.xMinBorder, this.xMaxBorder);
 		this.node.position = pos;
 		this.SetParameter();
 		this.RegisterEvent();
@@ -221,6 +231,16 @@ export default class TileBase extends cc.Component {
 		return null;
 	}
 
+	/** 改变尺寸 */
+	public ChangeScale(val: number, mustSet?: boolean) {
+		if (this.node.scaleX != val || mustSet == true) {
+			this.node.scaleX = val;
+			let half = this.collider.size.width / 2 * this.node.scaleX;
+			this.xMinBorder = GameData.Instance.xMinBorder + half;
+			this.xMaxBorder = GameData.Instance.xMaxBorder - half;
+		}
+	}
+
 	//#region Normal_Hor_Tile Normal_Ver_Tile
 
 	private Normal_Start() {
@@ -231,7 +251,7 @@ export default class TileBase extends cc.Component {
 	private Normal_Hor_Keep(event: cc.Event.EventTouch) {
 		let delta = event.touch.getDelta();
 		let will = this.node.x + delta.x;
-		this.node.x = MyU.Clamp(will, GameData.Instance.xMinBorder, GameData.Instance.xMaxBorder);
+		this.node.x = MyU.Clamp(will, this.xMinBorder, this.xMaxBorder);
 	}
 
 	private Normal_Ver_Keep(event: cc.Event.EventTouch) {

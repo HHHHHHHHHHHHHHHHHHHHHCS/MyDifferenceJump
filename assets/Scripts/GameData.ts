@@ -68,9 +68,9 @@ export default class GameData extends cc.Component {
 
 	//#region 物品参数-----------
 	public allItemWeight: number;//全部物品的权重
-	public itemNoneWeight = 1;//物品不出的权重
+	public itemNoneWeight = 2;//物品不出的权重
 
-	public hatWeight = 0.05;//帽子出现的权重
+	public hatWeight = 0.02;//帽子出现的权重
 	public hatNext = 60;//帽子的出现间隔
 	public hatFlySpeed = 1000;//帽子的飞行速度
 	public hatFlyTime = 1.5;//帽子的飞行时间
@@ -79,6 +79,21 @@ export default class GameData extends cc.Component {
 	public rocketNext = 100;//火箭的出现间隔
 	public rocketFlySpeed = 1500;//火箭的飞行速度
 	public rocketFlyTime = 2;//火箭的飞行时间
+
+	public frozenWeight = 0.01;//冻结的权重
+	public frozenNext = 100;//冻结的间隔
+	public frozenTime = 20;//冻结的持续时间
+	public frozenScale = 0.8;//冻结的缩放
+
+	public springWeight = 0.01;//垂直跳的权重
+	public springNext = 100;//垂直跳的间隔
+	public springTime = 6;//垂直跳的持续时间
+	public springForce = 1.5;//垂直跳的力量加强
+
+	public magnifierWeight = 0.01;//延长方块的权重
+	public magnifierNext = 60;//延长方块的出现间隔
+	public magnifierTime = 6;//延长方块的持续时间
+	public magnifierScale = 2;//延长方块的倍数
 
 	//#endregion
 
@@ -118,6 +133,9 @@ export default class GameData extends cc.Component {
 
 		this.hatWeight += this.itemNoneWeight;
 		this.rocketWeight += this.hatWeight;
-		this.allItemWeight = this.rocketWeight;
+		this.frozenWeight += this.rocketWeight;
+		this.springWeight += this.frozenWeight;
+		this.magnifierWeight += this.springWeight;
+		this.allItemWeight = this.magnifierWeight;
 	}
 }

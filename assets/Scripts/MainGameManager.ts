@@ -6,6 +6,7 @@ import MainUIManager from "./MainUIManager";
 import BackgroundManager from "./BackgroundManager";
 import GameData from "./GameData";
 import ItemManager from "./ItemManager";
+import { ItemType } from "./ItemBase";
 
 const { ccclass, property } = cc._decorator;
 
@@ -22,11 +23,14 @@ export default class MainGameManager extends cc.Component {
 	public itemManager: ItemManager;
 	public backgroundManager: BackgroundManager;
 
-	public isPlaying: boolean;
-	public gameState: GameState;
+	public isPlaying: boolean;//是否在玩
+	public gameState: GameState;//游戏状态
+
 
 	private nowScore: number = 0;//当前的分数
 	private hardNumber: number = 1;//当前的难度系数
+
+
 
 	public get HardNumber() {
 		return this.hardNumber;
@@ -42,7 +46,6 @@ export default class MainGameManager extends cc.Component {
 		this.itemManager = new ItemManager();
 
 		this.tileManager.createItemEvent.push((tile) => { this.itemManager.CreateItem(tile); });
-
 		this.tileManager.recoveryItemEvent.push((tile) => { this.itemManager.RecoveryItem(tile); });
 	}
 
@@ -58,7 +61,7 @@ export default class MainGameManager extends cc.Component {
 	/** 每桢事件 */
 	update(dt: number) {
 		if (this.gameState == GameState.Playing) {
-			this.player.OnUpdate(dt);
+			this.player.OnUpdate(this.itemManager.isFrozen ? dt * GameData.Instance.frozenScale : dt);
 			this.tileManager.OnUpdate(dt);
 			this.itemManager.OnUpdate(dt);
 		}

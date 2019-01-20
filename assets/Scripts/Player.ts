@@ -47,7 +47,6 @@ export default class Player extends cc.Component {
 	private isFly: boolean;//是否在飞行状态
 	private hatUsed: cc.Node;//帽子使用
 	private rocketUsed: cc.Node;//火箭使用
-	private flyTimer: number;//飞行的倒计时
 	private flySpeed: number;//飞行的速度
 
 
@@ -153,7 +152,7 @@ export default class Player extends cc.Component {
 				if (tileCom) {
 					tileCom.DoJump();
 					jumpForce = tileCom.GetForceScale();
-					if (jumpForce != null) {
+					if (jumpDir == null) {
 						jumpDir = tileCom.GetJumpDir();
 					}
 				}
@@ -165,6 +164,11 @@ export default class Player extends cc.Component {
 
 		if (jumpForce == null) {
 			jumpForce = 1;
+		}
+
+		if (MainGameManager.Instance.itemManager.isSpring) {
+			jumpForce *= GameData.Instance.springForce;
+			jumpDir = 0;
 		}
 
 		this.nowVerSpeed = this.hardJumpForce * jumpForce;
@@ -206,7 +210,7 @@ export default class Player extends cc.Component {
 	}
 
 	/** 执行飞行 */
-	public DoFly(isHat: boolean, flySpeed: number, flyTime: number) {
+	public DoFly(isHat: boolean, flySpeed: number) {
 		this.isFly = true;
 		if (isHat) {
 			this.hatUsed.active = true;
@@ -214,28 +218,21 @@ export default class Player extends cc.Component {
 		else {
 			this.rocketUsed.active = true;
 		}
-		this.flyTimer = flyTime;
+
 		this.flySpeed = flySpeed;
 	}
 
 	/** 更新飞行 */
 	private UpdateFly(dt: number) {
 		if (this.isFly) {
-			if (this.flyTimer > 0) {
-				this.node.y += this.flySpeed * dt;
-				this.flyTimer -= dt;
-			}
-
-			if (this.flyTimer <= 0) {
-				this.EndFly();
-			}
+			this.node.y += this.flySpeed * dt;
 			return true;
 		}
 		return false;
 	}
 
 	/** 结束飞行 */
-	private EndFly() {
+	public EndFly() {
 		this.isFly = false;
 		this.hatUsed.active = false;
 		this.rocketUsed.active = false;

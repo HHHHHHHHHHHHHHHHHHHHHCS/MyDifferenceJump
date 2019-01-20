@@ -6,10 +6,12 @@ import MainGameManager from "./MainGameManager";
 import TileManager from "./TileManager";
 import TileBase from "./TileBase";
 import ObjectPool from "./ObjectPool";
+import MainUIManager from "./MainUIManager";
 
 /** 物品管理器 */
 export default class ItemManager {
 
+	private uiManager: MainUIManager;
 	private tileManager: TileManager;
 	private gameData: GameData;
 
@@ -18,34 +20,64 @@ export default class ItemManager {
 
 	private hatNextIndex: number;
 	private rocketNextIndex: number;
+	private frozenNextIndex: number;
+	private springNextIndex: number;
+	private magnifierNextIndex: number;
+
+
+	public itemEndEvent: Function;//物体完成事件
+	public itemTimer: number;//物品倒计时
+	public itemMaxTime: number;//物品总时间
+	public isFrozen: boolean;//是否在冻结
+	public isSpring: boolean;//是否在垂直跳
+	public isMagnifier: boolean;//是否在放大道具状态
 
 
 	/** 构造函数 */
 	public constructor() {
 		this.gameData = GameData.Instance;
 		this.tileManager = MainGameManager.Instance.tileManager;
+		this.uiManager = MainGameManager.Instance.mainUIManager;
 
 		let parent = cc.find("World/ItemParent");
 		this.nowItemList = [];
 		this.itemPool = new ObjectPool(this.gameData.itemPrefab, ItemBase, 0, parent);
 
 
-		this.hatNextIndex = this.gameData.hatNext;
-		this.rocketNextIndex = this.gameData.rocketNext;
+		this.hatNextIndex = 0;//this.gameData.hatNext;
+		this.rocketNextIndex = 0;//this.gameData.rocketNext;
+		this.frozenNextIndex = 0;//this.gameData.frozenNext;
+		this.springNextIndex = 0;//this.gameData.springNext;
+		this.magnifierNextIndex = 0;//this.gameData.magnifierNext;
 	}
 
-	/** 玩家获得物品处理 */
+	/** 玩家获得物品处理,清理全部的物品 */
 	public GetItem(player: Player, other: cc.Collider): void {
 		var item = other.node.parent.getComponent(ItemBase);
-		this.DoRecoveryItem(item);
+		for (let i = this.nowItemList.length - 1; i >= 0; i--) {
+			this.DoRecoveryItem(this.nowItemList[i]);
+		}
 		item.DoItem(player);
 	}
 
 	/** 更新 */
 	public OnUpdate(dt: number) {
+		if (this.itemTimer >= 0) {
+			this.itemTimer -= dt;
+			if (this.itemTimer < 0) {
+				this.itemEndEvent();
+			}
+			this.uiManager.UpdateItemProgress(this.itemTimer / this.itemMaxTime);
+		}
 		this.nowItemList.forEach(item => {
 			item.UpdatePos();
 		});
+	}
+
+	/** 设置物品时间 */
+	public SetItemTime(val: number) {
+		this.itemTimer = val;
+		this.itemMaxTime = val;
 	}
 
 
@@ -65,6 +97,18 @@ export default class ItemManager {
 			return ItemType.Rocket;
 		}
 
+		if (rd <= this.gameData.frozenWeight) {
+			return ItemType.Frozen;
+		}
+
+		if (rd <= this.gameData.springWeight) {
+			return ItemType.Spring;
+		}
+
+		if (rd <= this.gameData.magnifierWeight) {
+			return ItemType.Magnifier;
+		}
+
 		return ItemType.None;
 	}
 
@@ -79,9 +123,34 @@ export default class ItemManager {
 				}
 				break;
 			}
+
 			case ItemType.Rocket: {
 				if (currentTileIndex >= this.rocketNextIndex) {
 					this.rocketNextIndex = currentTileIndex + this.gameData.rocketNext;
+					return type;
+				}
+				break;
+			}
+
+			case ItemType.Frozen: {
+				if (currentTileIndex >= this.frozenNextIndex) {
+					this.frozenNextIndex = currentTileIndex + this.gameData.frozenNext;
+					return type;
+				}
+				break;
+			}
+
+			case ItemType.Spring: {
+				if (currentTileIndex >= this.springNextIndex) {
+					this.springNextIndex = currentTileIndex + this.gameData.springNext;
+					return type;
+				}
+				break;
+			}
+
+			case ItemType.Magnifier: {
+				if (currentTileIndex >= this.magnifierNextIndex) {
+					this.magnifierNextIndex = currentTileIndex + this.gameData.magnifierNext;
 					return type;
 				}
 				break;
@@ -94,7 +163,7 @@ export default class ItemManager {
 
 	/** 判断条件 创建物品 */
 	public CreateItem(tile: TileBase) {
-		if (!tile.IsBind) {
+		if (!tile.IsBind || this.itemTimer >= 0) {
 			return;
 		}
 		var itemType = this.NeedCreateItem();

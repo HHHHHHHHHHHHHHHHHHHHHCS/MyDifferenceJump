@@ -71,7 +71,7 @@ export default class TileManager {
 				break;
 			}
 		}
-		let pos = new cc.Vec2(MyU.Random(this.gameData.xMinBorder, this.gameData.xMaxBorder), this.currentTileY);
+		let pos = new cc.Vec2(0, this.currentTileY);
 		tile.Init(type, pos);
 		this.nowTilesList.push(tile);
 		this.createItemEvent.forEach(func => {
@@ -194,16 +194,32 @@ export default class TileManager {
 		}
 	}
 
-	/** 生成破碎的方块 */
+	/** 生成破碎的方块,记得回收道具 */
 	public SpawnTouchBreak(tile: TileBase) {
 		let leftTemp = this.touchBreakPool.Get();
 		leftTemp.OnInit(tile, true);
 		let rightTemp = this.touchBreakPool.Get();
 		rightTemp.OnInit(tile, false);
+		this.recoveryItemEvent.forEach(func => {
+			func(tile);
+		});
 	}
 
 	/** 回收破碎的方块 */
 	public RecoveryTouchBreak(touchBreak: TouchBreakChild) {
 		this.touchBreakPool.Put(touchBreak);
+	}
+
+	public MagnifierTilesScale() {
+		this.nowTilesList.forEach(tile => {
+			tile.ChangeScale(GameData.Instance.magnifierScale);
+		});
+	}
+
+
+	public ResetTilesScale() {
+		this.nowTilesList.forEach(tile => {
+			tile.ChangeScale(1);
+		});
 	}
 }
