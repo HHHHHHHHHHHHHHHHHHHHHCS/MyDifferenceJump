@@ -24,7 +24,7 @@ export default class TileManager {
 	private lastSpringHorIndex: number;
 	private lastFrozenHorIndex: number;
 
-	private gameData;
+	private gameData: GameData;
 
 	public constructor() {
 		this.gameData = GameData.Instance;

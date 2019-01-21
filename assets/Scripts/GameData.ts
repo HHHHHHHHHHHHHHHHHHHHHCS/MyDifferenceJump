@@ -5,6 +5,7 @@ export const enum Tags {
 	Tile,
 	TileChild,
 	Item,
+	Enemy,
 }
 
 export const enum GameState {
@@ -36,8 +37,8 @@ export default class GameData extends cc.Component {
 	//#endregion
 
 	//#region 跳板参数-----------
-	public startTileY: number = -750;//开始跳板的Y,第一个会加一个nextTileY
-	public recoveryTileY: number = 0;//跳板回收的Y
+	public startTileY = -750;//开始跳板的Y,第一个会加一个nextTileY
+	public recoveryTileY = 15;//跳板回收的Y
 
 	public allTileWeight = 0;//跳板的总权重,自动生成
 	public defaultNextTileY = 350;//正常下一个跳板的Y
@@ -97,6 +98,20 @@ export default class GameData extends cc.Component {
 
 	//#endregion
 
+
+	//#region 物品参数-----------
+	public allEnemyWeight: number;//全部敌人的权重
+	public recoveryEnemyY = 150;
+	public enemyNoneWeight = 1;//不出现敌人的权重
+	public enemy1Weight = 0.02;//敌人1的权重
+	public enemy2Weight = 0.01;//敌人2的权重
+	public enemy2Speed = 300;//敌人2的移动速度 
+	public enemy3Weight = 0.01;//敌人3的权重
+	public enemy3Speed = 300;//敌人3的移动速度
+	public enemyNext = 60;//下个敌人的间隔
+
+	//#endregion
+
 	@property(cc.Prefab)
 	public tilePrefab: cc.Prefab = null;
 
@@ -137,5 +152,11 @@ export default class GameData extends cc.Component {
 		this.springWeight += this.frozenWeight;
 		this.magnifierWeight += this.springWeight;
 		this.allItemWeight = this.magnifierWeight;
+
+		this.recoveryEnemyY += this.halfYBorder;
+		this.enemy1Weight += this.enemyNoneWeight;
+		this.enemy2Weight += this.enemy1Weight;
+		this.enemy3Weight += this.enemy2Weight;
+		this.allEnemyWeight = this.enemy3Weight;
 	}
 }
