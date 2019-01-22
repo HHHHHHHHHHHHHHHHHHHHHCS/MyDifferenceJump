@@ -109,12 +109,16 @@ export default class Player extends cc.Component {
 		if (this.isFly) {
 			return;
 		}
+		if (other.tag == Tags.Enemy) {
+			this.GameOver();
+			return;
+		}
 
 		if (this.nowVerSpeed <= 0) {
 			if (other.tag == Tags.Tile || other.tag == Tags.TileChild) {
 				this.Jump(other);
 			}
-			if (other.tag == Tags.Item) {
+			else if (other.tag == Tags.Item) {
 				MainGameManager.Instance.itemManager.GetItem(this, other);
 			}
 		}

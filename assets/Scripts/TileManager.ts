@@ -6,8 +6,8 @@ import MainGameManager from "./MainGameManager";
 import TouchBreakChild from "./TouchBreakChild";
 
 export default class TileManager {
-	public createItemEvent: Function[];
-	public recoveryItemEvent: Function[];
+	public createTileEvent: Function[];
+	public recoveryTileEvent: Function[];
 
 	private nowTilesList: TileBase[];
 	private tilePool: ObjectPool<TileBase>;
@@ -30,8 +30,8 @@ export default class TileManager {
 		this.gameData = GameData.Instance;
 		let parent = cc.find("World/TileParent");
 		this.platform = cc.find("World/Platform");
-		this.createItemEvent = [];
-		this.recoveryItemEvent = [];
+		this.createTileEvent = [];
+		this.recoveryTileEvent = [];
 		this.nowTilesList = [];
 		this.tilePool = new ObjectPool(this.gameData.tilePrefab, TileBase, 20, parent);
 		this.touchBreakPool = new ObjectPool(this.gameData.touchBreakPrefab, TouchBreakChild, 0, parent);
@@ -74,7 +74,7 @@ export default class TileManager {
 		let pos = new cc.Vec2(0, this.currentTileY);
 		tile.Init(type, pos);
 		this.nowTilesList.push(tile);
-		this.createItemEvent.forEach(func => {
+		this.createTileEvent.forEach(func => {
 			func(tile);
 		});
 	}
@@ -180,7 +180,7 @@ export default class TileManager {
 			tile.Recovery();
 			this.tilePool.Put(tile);
 			//回收事件
-			this.recoveryItemEvent.forEach(func => {
+			this.recoveryTileEvent.forEach(func => {
 				func(tile);
 			});
 		}
@@ -200,7 +200,7 @@ export default class TileManager {
 		leftTemp.OnInit(tile, true);
 		let rightTemp = this.touchBreakPool.Get();
 		rightTemp.OnInit(tile, false);
-		this.recoveryItemEvent.forEach(func => {
+		this.recoveryTileEvent.forEach(func => {
 			func(tile);
 		});
 	}

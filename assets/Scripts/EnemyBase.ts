@@ -1,5 +1,6 @@
 import MyU from "./My/MyU";
 import GameData from "./GameData";
+import MainGameManager from "./MainGameManager";
 
 /** 敌人的类型 */
 export enum EnemyType {
@@ -26,6 +27,10 @@ export default class EnemyBase extends cc.Component {
 	private xMinBorder: number;
 	private xMaxBorder: number;
 
+	private touchCount: number;
+	private reduceOpacity: number;
+
+	/** Awake */
 	onLoad() {
 		if (EnemyBase.halfX == undefined) {
 			EnemyBase.halfX = this.node.width / 2;
@@ -34,20 +39,29 @@ export default class EnemyBase extends cc.Component {
 		this.enemy1 = cc.find("Enemy1", this.node);
 		this.enemy2 = cc.find("Enemy2", this.node);
 		this.enemy3 = cc.find("Enemy3", this.node);
+
+		this.node.on(cc.Node.EventType.TOUCH_END, this.EndTouch, this);
+		this.node.on(cc.Node.EventType.TOUCH_CANCEL, this.EndTouch, this);
 	}
 
-	public OnInit(type: EnemyType) {
-		this.enemyType = type;
+	/** 初始化 */
+	public OnInit(type: EnemyType, posY: number) {
 		this.HideAll();
+		this.enemyType = type;
+		this.node.opacity = 255;
 		let gameData = GameData.Instance;
 		switch (type) {
 			case EnemyType.Enemy1: {
 				this.enemy1.active = true;
+				this.touchCount = gameData.enemy1KillCount;
 				this.moveDir = 0;
+				this.xMinBorder = gameData.xMinBorder + EnemyBase.halfX;
+				this.xMaxBorder = gameData.xMaxBorder - EnemyBase.halfX;
 				break;
 			}
 			case EnemyType.Enemy2: {
 				this.enemy2.active = true;
+				this.touchCount = gameData.enemy2KillCount;
 				this.moveDir = MyU.RandomNumber(-1, 1);
 				this.xMinBorder = gameData.xMinBorder + EnemyBase.halfX;
 				this.xMaxBorder = gameData.xMaxBorder - EnemyBase.halfX;
@@ -56,6 +70,7 @@ export default class EnemyBase extends cc.Component {
 			}
 			case EnemyType.Enemy3: {
 				this.enemy3.active = true;
+				this.touchCount = gameData.enemy3KillCount;
 				this.moveDir = MyU.RandomNumber(-1, 1);
 				this.xMinBorder = gameData.xMinBorder - EnemyBase.halfX;
 				this.xMaxBorder = gameData.xMaxBorder + EnemyBase.halfX;
@@ -63,14 +78,21 @@ export default class EnemyBase extends cc.Component {
 				break;
 			}
 		}
+
+		this.reduceOpacity = Math.ceil(this.node.opacity / this.touchCount);
+		this.node.setPosition(MyU.Random(this.xMinBorder, this.xMaxBorder)
+			, posY + MyU.Random(gameData.enemySpawnMinY, gameData.enemySpawnMaxY));
+		this.node.active = true;
 	}
 
+	/** 隐藏全部 */
 	public HideAll() {
 		this.enemy1.active = false;
 		this.enemy2.active = false;
 		this.enemy3.active = false;
 	}
 
+	/** 更新 */
 	public OnUpdate(dt: number) {
 		if (this.enemyType == EnemyType.Enemy2) {
 			this.node.x += this.moveDir * this.moveSpeed * dt;
@@ -89,6 +111,19 @@ export default class EnemyBase extends cc.Component {
 			else if (this.node.x >= this.xMaxBorder) {
 				this.node.x = this.xMinBorder;
 			}
+		}
+	}
+
+	public Recovery() {
+
+	}
+
+	//手抬起
+	public EndTouch() {
+		this.touchCount--;
+		this.node.opacity -= this.reduceOpacity;
+		if (this.touchCount <= 0) {
+			MainGameManager.Instance.enemyManager.RecoveryEnemy(this);
 		}
 	}
 }

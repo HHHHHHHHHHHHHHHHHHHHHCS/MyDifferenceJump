@@ -99,16 +99,30 @@ export default class GameData extends cc.Component {
 	//#endregion
 
 
-	//#region 物品参数-----------
+	//#region 敌人参数-----------
 	public allEnemyWeight: number;//全部敌人的权重
-	public recoveryEnemyY = 150;
+	public recoveryEnemyY = 150;//回收敌人的Y
+	public enemySpawnMinY = 30;//敌人Y的最小值
+	public enemySpawnMaxY = 180;//敌人的Y的最大值
 	public enemyNoneWeight = 1;//不出现敌人的权重
+	public enemyNext = 60;//下个敌人的间隔
+
+
 	public enemy1Weight = 0.02;//敌人1的权重
+	public enemy1KillCount = 3;//敌人1的点击杀死次数
+
 	public enemy2Weight = 0.01;//敌人2的权重
 	public enemy2Speed = 300;//敌人2的移动速度 
+	public enemy2KillCount = 3;//敌人2的点击杀死次数
+
 	public enemy3Weight = 0.01;//敌人3的权重
 	public enemy3Speed = 300;//敌人3的移动速度
-	public enemyNext = 60;//下个敌人的间隔
+	public enemy3KillCount = 3;//敌人3的点击杀死次数
+
+	public enemyRocketWeight =  0.02*100;//敌人火箭的权重 rd在0~1之间 小于等于这个值
+	public enemyRocketHeight = 180;//敌人火箭的生成距离
+	public enemyRocketSpeed = 500;//敌人火箭的速度
+	public enemyRocketStartIndex = 5;//敌人火箭初始的index
 
 	//#endregion
 
@@ -129,6 +143,12 @@ export default class GameData extends cc.Component {
 
 	@property(cc.Prefab)
 	public itemPrefab: cc.Prefab = null;
+
+	@property(cc.Prefab)
+	public enemyPrefab: cc.Prefab = null;
+
+	@property(cc.Prefab)
+	public enemyRocketPrefab: cc.Prefab = null;
 
 	onLoad() {
 		GameData.Instance = this;

@@ -7,6 +7,7 @@ import BackgroundManager from "./BackgroundManager";
 import GameData from "./GameData";
 import ItemManager from "./ItemManager";
 import { ItemType } from "./ItemBase";
+import EnemyManager from "./EnemyManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -21,6 +22,7 @@ export default class MainGameManager extends cc.Component {
 	public mainUIManager: MainUIManager;
 	public tileManager: TileManager;
 	public itemManager: ItemManager;
+	public enemyManager: EnemyManager;
 	public backgroundManager: BackgroundManager;
 
 	public isPlaying: boolean;//是否在玩
@@ -43,10 +45,12 @@ export default class MainGameManager extends cc.Component {
 		this.mainUIManager = cc.find("World/UIRoot").getComponent(MainUIManager);
 		this.backgroundManager = cc.find("World/Backgrounds").getComponent(BackgroundManager);
 		this.tileManager = new TileManager();
+		this.enemyManager = new EnemyManager();
 		this.itemManager = new ItemManager();
 
-		this.tileManager.createItemEvent.push((tile) => { this.itemManager.CreateItem(tile); });
-		this.tileManager.recoveryItemEvent.push((tile) => { this.itemManager.RecoveryItem(tile); });
+		this.tileManager.createTileEvent.push((tile) => { this.itemManager.CreateItem(tile); });
+		this.tileManager.createTileEvent.push((tile) => { this.enemyManager.CreateEnemy(tile); })
+		this.tileManager.recoveryTileEvent.push((tile) => { this.itemManager.RecoveryItem(tile); });
 	}
 
 	/** 第一帧开始 */
@@ -64,6 +68,7 @@ export default class MainGameManager extends cc.Component {
 			this.player.OnUpdate(this.itemManager.isFrozen ? dt * GameData.Instance.frozenScale : dt);
 			this.tileManager.OnUpdate(dt);
 			this.itemManager.OnUpdate(dt);
+			this.enemyManager.OnUpdate(dt);
 		}
 	}
 
@@ -91,6 +96,7 @@ export default class MainGameManager extends cc.Component {
 				this.lastRecoveryY = cameraY;
 				this.tileManager.OnRecovery(cameraY);
 				this.backgroundManager.OnRecovery(cameraY);
+				this.enemyManager.OnRecovery(cameraY);
 			}
 		}
 	}
