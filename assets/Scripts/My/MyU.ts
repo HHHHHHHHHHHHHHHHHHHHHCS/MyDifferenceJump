@@ -1,3 +1,5 @@
+export const ClickEvent: string = "click";
+
 /** Unity魔改 */
 export default class MyU {
 	/**

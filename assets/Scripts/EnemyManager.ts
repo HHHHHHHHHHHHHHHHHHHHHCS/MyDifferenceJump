@@ -30,6 +30,7 @@ export default class EnemyManager {
 
 		this.enemyRocket = cc.instantiate(this.gameData.enemyRocketPrefab).getComponent(EnemyRocketBase);
 		this.enemyRocket.node.setParent(parent);
+		this.enemyRocket.node.active = false;
 
 		this.enemyIndex = this.gameData.enemyNext;
 	}

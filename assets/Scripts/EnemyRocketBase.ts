@@ -39,11 +39,11 @@ export default class EnemyRocketBase extends cc.Component {
 		this.isCatch = false;
 		this.needSetSpeed = false;
 		this.isInView = true;
+		this.touchSpeed = undefined;
 		let rdX = MyU.Random(this.gameData.xMinBorder, this.gameData.xMaxBorder);
 		this.node.setPosition(rdX, cameraY + this.gameData.enemyRocketHeight);
 		MainGameManager.Instance.mainUIManager.ShowDangerousTip(rdX);
 		this.node.active = true;
-		//TODO:BUG
 	}
 
 	public OnUpdate(dt: number) {
@@ -52,7 +52,7 @@ export default class EnemyRocketBase extends cc.Component {
 		}
 		else if (this.node.y <= MainGameManager.Instance.lastRecoveryY - this.halfY) {
 			//要被回收
-			//MainGameManager.Instance.enemyManager.RecoveryEenmyRocket();
+			MainGameManager.Instance.enemyManager.RecoveryEenmyRocket();
 		}
 		else {
 			//视野内
@@ -63,12 +63,16 @@ export default class EnemyRocketBase extends cc.Component {
 		}
 
 		if (!this.isCatch && this.needSetSpeed) {
-			this.touchSpeed = (this.touchLastX - this.node.x) / dt;
+			//这里用两倍的甩开速度
+			this.touchSpeed = 2 * (this.node.x - this.touchLastX) / dt;
 			this.needSetSpeed = false;
 		}
 
 		this.node.y -= this.moveSpeed * dt;
-		this.node.x = this.touchSpeed * dt;
+		if (this.touchSpeed != undefined) {
+			this.node.x += this.touchSpeed * dt;
+		}
+		MyU.Log("pos");
 	}
 
 	private StartTouch(event: cc.Event.EventTouch) {

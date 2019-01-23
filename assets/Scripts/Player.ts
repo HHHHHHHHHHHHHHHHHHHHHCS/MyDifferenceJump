@@ -109,6 +109,7 @@ export default class Player extends cc.Component {
 		if (this.isFly) {
 			return;
 		}
+		
 		if (other.tag == Tags.Enemy) {
 			this.GameOver();
 			return;
