@@ -11,9 +11,10 @@ export const enum Tags {
 export const enum GameState {
 	Ready,
 	Playing,
-	Stop,
+	Pause,
 	GameOver
 }
+
 
 @ccclass
 /** 

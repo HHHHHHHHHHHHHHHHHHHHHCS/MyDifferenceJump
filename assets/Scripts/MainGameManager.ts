@@ -74,10 +74,35 @@ export default class MainGameManager extends cc.Component {
 
 	/** 游戏开始 */
 	public StartGame() {
-		this.gameState = GameState.Playing;
-		this.isPlaying = true;
-		this.node.off(cc.Node.EventType.TOUCH_START, this.StartGame, this);
-		Player.Instance.StartJump();
+		if (this.gameState == GameState.Ready) {
+			this.gameState = GameState.Playing;
+			this.isPlaying = true;
+			this.node.off(cc.Node.EventType.TOUCH_START, this.StartGame, this);
+			Player.Instance.StartJump();
+		}
+	}
+
+	/** 暂停游戏 */
+	public PauseGame() {
+		this.gameState = GameState.Pause;
+	}
+
+	/** 继续游戏 */
+	public ResumeGame() {
+		if (this.isPlaying) {
+			this.gameState = GameState.Playing;
+		}
+		else {
+			this.gameState = GameState.Ready
+		}
+	}
+
+
+	/** 游戏结束 */
+	public GameOver() {
+		this.gameState = GameState.GameOver;
+		this.isPlaying = false;
+		this.mainUIManager.ShowGameOverBg();
 	}
 
 	/** 更新分数 */
@@ -101,12 +126,6 @@ export default class MainGameManager extends cc.Component {
 		}
 	}
 
-	/** 游戏结束 */
-	public GameOver() {
-		this.gameState = GameState.GameOver;
-		this.isPlaying = false;
-		this.mainUIManager.ShowGameOverBg();
-	}
 
 	/** 添加难度 */
 	public AddHard(val?: number): void {
@@ -118,4 +137,5 @@ export default class MainGameManager extends cc.Component {
 		}
 		Player.Instance.AddHard(this.hardNumber);
 	}
+
 }

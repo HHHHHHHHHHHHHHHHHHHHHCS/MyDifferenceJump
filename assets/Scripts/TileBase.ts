@@ -1,4 +1,4 @@
-import GameData from "./GameData";
+import GameData, { GameState } from "./GameData";
 import MyU from "./My/MyU";
 import MainGameManager from "./MainGameManager";
 import ItemBase from "./ItemBase";
@@ -169,33 +169,41 @@ export default class TileBase extends cc.Component {
 
 	/** 开始触摸 */
 	private StartTouch(event: cc.Event.EventTouch) {
-		if (this.startTouchEvent) {
-			this.startTouchEvent();
+		if (MainGameManager.Instance.gameState == GameState.Playing) {
+			if (this.startTouchEvent) {
+				this.startTouchEvent();
+			}
+			event.stopPropagation();
 		}
-		event.stopPropagation();
 	}
 
 	/** 保持触摸 */
 	private KeepTouch(event: cc.Event.EventTouch) {
-		if (this.keepTouchEvent) {
-			this.keepTouchEvent(event)
+		if (MainGameManager.Instance.gameState == GameState.Playing) {
+			if (this.keepTouchEvent) {
+				this.keepTouchEvent(event)
+			}
+			event.stopPropagation();
 		}
-		event.stopPropagation();
 	}
 
 	/** 结束触摸 */
 	private EndTouch(event: cc.Event.EventTouch) {
-		if (this.endTouchEvent) {
-			this.endTouchEvent(event)
+		if (MainGameManager.Instance.gameState == GameState.Playing) {
+			if (this.endTouchEvent) {
+				this.endTouchEvent(event)
+			}
+			event.stopPropagation();
 		}
-		event.stopPropagation();
 	}
 
 
 	/** 跳板被跳跃 */
 	public DoJump() {
-		if (this.jumpEvent) {
-			this.jumpEvent();
+		if (MainGameManager.Instance.gameState == GameState.Playing) {
+			if (this.jumpEvent) {
+				this.jumpEvent();
+			}
 		}
 	}
 

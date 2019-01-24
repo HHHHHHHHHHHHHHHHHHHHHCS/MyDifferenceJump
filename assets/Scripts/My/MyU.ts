@@ -1,4 +1,5 @@
 export const ClickEvent: string = "click";
+export const SliderEvent: string = "slide";
 
 /** Unity魔改 */
 export default class MyU {
