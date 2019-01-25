@@ -2,16 +2,18 @@ import Player from "./Player";
 import ItemBase, { ItemType } from "./ItemBase";
 import MyU from "./My/MyU";
 import GameData from "./GameData";
-import MainGameManager from "./MainGameManager";
+import GameGameManager from "./GameGameManager";
 import TileManager from "./TileManager";
 import TileBase from "./TileBase";
 import ObjectPool from "./ObjectPool";
-import MainUIManager from "./MainUIManager";
+import GameUIManager from "./GameUIManager";
+import { StorageEnum } from "./My/MyStorageManager";
+import { EffectAudioEnum } from "./GameAudioManager";
 
 /** 物品管理器 */
 export default class ItemManager {
 
-	private uiManager: MainUIManager;
+	private uiManager: GameUIManager;
 	private tileManager: TileManager;
 	private gameData: GameData;
 
@@ -36,8 +38,8 @@ export default class ItemManager {
 	/** 构造函数 */
 	public constructor() {
 		this.gameData = GameData.Instance;
-		this.tileManager = MainGameManager.Instance.tileManager;
-		this.uiManager = MainGameManager.Instance.mainUIManager;
+		this.tileManager = GameGameManager.Instance.tileManager;
+		this.uiManager = GameGameManager.Instance.mainUIManager;
 
 		let parent = cc.find("World/ItemParent");
 		this.nowItemList = [];
@@ -53,6 +55,7 @@ export default class ItemManager {
 
 	/** 玩家获得物品处理,清理全部的物品 */
 	public GetItem(player: Player, other: cc.Collider): void {
+		GameGameManager.Instance.audioManager.PlayEffectAudio(EffectAudioEnum.getItemAudio);
 		var item = other.node.parent.getComponent(ItemBase);
 		for (let i = this.nowItemList.length - 1; i >= 0; i--) {
 			this.DoRecoveryItem(this.nowItemList[i]);

@@ -1,8 +1,9 @@
 import TileBase from "./TileBase";
 import GameData from "./GameData";
 import ObjectPool from "./ObjectPool";
-import MainGameManager from "./MainGameManager";
+import GameGameManager from "./GameGameManager";
 import MyU from "./My/MyU";
+import { EffectAudioEnum } from "./GameAudioManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -39,6 +40,7 @@ export default class TouchBreakChild extends cc.Component {
 
 	public DoJump() {
 		this.collider.enabled = false;
+		GameGameManager.Instance.audioManager.PlayEffectAudio(EffectAudioEnum.touchBreakAudio);
 		this.node.runAction(cc.sequence(
 			cc.moveBy(0.5, 0, -500),
 			cc.callFunc(this.Recovery, this, this),
@@ -47,6 +49,6 @@ export default class TouchBreakChild extends cc.Component {
 
 	public Recovery(node: cc.Node, touchBreak: TouchBreakChild) {
 		node.stopAllActions();
-		MainGameManager.Instance.tileManager.RecoveryTouchBreak(touchBreak);
+		GameGameManager.Instance.tileManager.RecoveryTouchBreak(touchBreak);
 	}
 }

@@ -1,9 +1,10 @@
 import GameData, { Tags } from "./GameData";
 import MyU from "./My/MyU";
-import MainGameManager from "./MainGameManager";
+import GameGameManager from "./GameGameManager";
 import TileBase, { TileType } from "./TileBase";
 import TouchBreakChild from "./TouchBreakChild";
 import ItemManager from "./ItemManager";
+import { EffectAudioEnum } from "./GameAudioManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -109,8 +110,9 @@ export default class Player extends cc.Component {
 		if (this.isFly) {
 			return;
 		}
-		
+
 		if (other.tag == Tags.Enemy) {
+			GameGameManager.Instance.enemyManager.Recovery(other);
 			this.GameOver();
 			return;
 		}
@@ -120,7 +122,7 @@ export default class Player extends cc.Component {
 				this.Jump(other);
 			}
 			else if (other.tag == Tags.Item) {
-				MainGameManager.Instance.itemManager.GetItem(this, other);
+				GameGameManager.Instance.itemManager.GetItem(this, other);
 			}
 		}
 	}
@@ -171,7 +173,7 @@ export default class Player extends cc.Component {
 			jumpForce = 1;
 		}
 
-		if (MainGameManager.Instance.itemManager.isSpring) {
+		if (GameGameManager.Instance.itemManager.isSpring) {
 			jumpForce *= GameData.Instance.springForce;
 			jumpDir = 0;
 		}
@@ -193,13 +195,13 @@ export default class Player extends cc.Component {
 	public UpdateScore() {
 		if (this.node.y > this.lastPlayerY) {
 			this.lastPlayerY = this.node.y;
-			MainGameManager.Instance.UpdateNowScore(this.lastPlayerY + this.scoreOffset);
+			GameGameManager.Instance.UpdateNowScore(this.lastPlayerY + this.scoreOffset);
 		}
 	}
 
 	/** 检测死亡 */
 	public CheckDie(): boolean {
-		let dieY = MainGameManager.Instance.lastRecoveryY - this.playerDieY;
+		let dieY = GameGameManager.Instance.lastRecoveryY - this.playerDieY;
 		if (dieY > this.node.y) {
 			this.GameOver();
 			return true;
@@ -211,7 +213,26 @@ export default class Player extends cc.Component {
 	public GameOver() {
 		this.collider.enabled = false;
 		this.isPlaying = false;
-		MainGameManager.Instance.GameOver();
+		let mainGameManager = GameGameManager.Instance;
+		mainGameManager.audioManager.PlayEffectAudio(EffectAudioEnum.dieAudio);
+		mainGameManager.GameOver();
+	}
+
+	/** 复活 */
+	public Reivive() {
+		this.collider.enabled = true;
+		this.isPlaying = true;
+
+		let player = Player.Instance;
+		let gameData = GameData.Instance;
+		let itemManager = GameGameManager.Instance.itemManager;
+
+		player.node.y += gameData.playerReiviveY;
+
+		player.DoFly(true, gameData.hatFlySpeed);
+		itemManager.SetItemTime(gameData.hatFlyTime);
+		itemManager.itemEndEvent = () => { player.EndFly(); };
+
 	}
 
 	/** 执行飞行 */

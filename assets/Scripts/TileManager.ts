@@ -2,7 +2,7 @@ import TileBase, { TileType } from "./TileBase";
 import ObjectPool from "./ObjectPool";
 import GameData from "./GameData";
 import MyU from "./My/MyU";
-import MainGameManager from "./MainGameManager";
+import GameGameManager from "./GameGameManager";
 import TouchBreakChild from "./TouchBreakChild";
 
 export default class TileManager {
@@ -187,7 +187,7 @@ export default class TileManager {
 
 		for (let i = 0; i <= removeIndex; i++) {
 			//增加游戏难度
-			MainGameManager.Instance.AddHard();
+			GameGameManager.Instance.AddHard();
 			//生成新的块
 			this.SpawnTile();
 			//添加道具

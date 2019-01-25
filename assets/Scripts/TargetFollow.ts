@@ -1,4 +1,4 @@
-import MainGameManager from "./MainGameManager";
+import GameGameManager from "./GameGameManager";
 import MyU from "./My/MyU";
 
 const { ccclass, property } = cc._decorator
@@ -25,6 +25,6 @@ export default class TargetFollow extends cc.Component {
 			this.moveAct = cc.moveBy(this.dampTime, cc.v2(0, offset)).easing(cc.easeOut(3.0));
 			this.node.runAction(this.moveAct);
 		}
-		MainGameManager.Instance.Recovery(this.target.y);
+		GameGameManager.Instance.Recovery(this.target.y);
 	}
 }

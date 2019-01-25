@@ -2,28 +2,31 @@ import Player from "./Player";
 import TileManager from "./TileManager";
 import { GameState } from "./GameData";
 import MyU from "./My/MyU";
-import MainUIManager from "./MainUIManager";
+import GameUIManager from "./GameUIManager";
 import BackgroundManager from "./BackgroundManager";
 import GameData from "./GameData";
 import ItemManager from "./ItemManager";
 import { ItemType } from "./ItemBase";
 import EnemyManager from "./EnemyManager";
+import AudioManager from "./GameAudioManager";
+import MyStorageManager, { StorageEnum } from "./My/MyStorageManager";
 
 const { ccclass, property } = cc._decorator;
 
 /** 主游戏场景控制 */
 @ccclass
-export default class MainGameManager extends cc.Component {
-	public static Instance: MainGameManager;
+export default class GameGameManager extends cc.Component {
+	public static Instance: GameGameManager;
 
 	public lastRecoveryY: number = Number.MIN_SAFE_INTEGER;//摄像机的最高Y
 
 	public player: Player;
-	public mainUIManager: MainUIManager;
+	public mainUIManager: GameUIManager;
 	public tileManager: TileManager;
 	public itemManager: ItemManager;
 	public enemyManager: EnemyManager;
 	public backgroundManager: BackgroundManager;
+	public audioManager: AudioManager;
 
 	public isPlaying: boolean;//是否在玩
 	public gameState: GameState;//游戏状态
@@ -32,18 +35,32 @@ export default class MainGameManager extends cc.Component {
 	private nowScore: number = 0;//当前的分数
 	private hardNumber: number = 1;//当前的难度系数
 
+	private isReivived;//是否复活过了
 
 
+	/** 难度系数 */
 	public get HardNumber() {
 		return this.hardNumber;
 	}
 
+	/** 当前分数 */
+	public get NowScore() {
+		return this.nowScore;
+	}
+
+	/** 是否复活过了 */
+	public get IsReivived() {
+		return this.isReivived;
+	}
+
 	/** 游戏开始的时候 */
 	onLoad() {
-		MainGameManager.Instance = this;
+		GameGameManager.Instance = this;
 		this.player = cc.find("World/Player").getComponent(Player).OnInit();
-		this.mainUIManager = cc.find("World/UIRoot").getComponent(MainUIManager);
+		this.mainUIManager = cc.find("World/UIRoot").getComponent(GameUIManager);
 		this.backgroundManager = cc.find("World/Backgrounds").getComponent(BackgroundManager);
+
+		this.audioManager = new AudioManager();
 		this.tileManager = new TileManager();
 		this.enemyManager = new EnemyManager();
 		this.itemManager = new ItemManager();
@@ -102,6 +119,15 @@ export default class MainGameManager extends cc.Component {
 	public GameOver() {
 		this.gameState = GameState.GameOver;
 		this.isPlaying = false;
+		let highScore = MyStorageManager.GetFloat(StorageEnum.HighScore);
+
+		if (isNaN(highScore)) {
+			highScore = 0;
+		}
+
+		if (this.nowScore > highScore) {
+			MyStorageManager.Save(StorageEnum.HighScore, this.nowScore);
+		}
 		this.mainUIManager.ShowGameOverBg();
 	}
 
@@ -138,4 +164,16 @@ export default class MainGameManager extends cc.Component {
 		Player.Instance.AddHard(this.hardNumber);
 	}
 
+
+	/** 复活 */
+	public DoReivive() {
+		if (!this.isReivived) {
+			this.isReivived = true;
+			this.gameState = GameState.Playing;
+			this.isPlaying = true;
+
+			this.player.Reivive();
+		}
+
+	}
 }

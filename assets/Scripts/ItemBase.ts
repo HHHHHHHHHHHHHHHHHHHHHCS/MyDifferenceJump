@@ -2,7 +2,7 @@ import Player from "./Player";
 import MyU from "./My/MyU";
 import TileBase from "./TileBase";
 import GameData from "./GameData";
-import MainGameManager from "./MainGameManager";
+import GameGameManager from "./GameGameManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -128,7 +128,7 @@ export default class ItemBase extends cc.Component {
 	public EatHat() {
 		let player = Player.Instance;
 		let gameData = GameData.Instance;
-		let itemManager = MainGameManager.Instance.itemManager;
+		let itemManager = GameGameManager.Instance.itemManager;
 
 		player.DoFly(true, gameData.hatFlySpeed);
 		itemManager.SetItemTime(gameData.hatFlyTime);
@@ -139,7 +139,7 @@ export default class ItemBase extends cc.Component {
 	public EatRocket() {
 		let player = Player.Instance;
 		let gameData = GameData.Instance;
-		let itemManager = MainGameManager.Instance.itemManager;
+		let itemManager = GameGameManager.Instance.itemManager;
 
 		player.DoFly(false, gameData.rocketFlySpeed);
 		itemManager.SetItemTime(gameData.rocketFlyTime);
@@ -148,7 +148,7 @@ export default class ItemBase extends cc.Component {
 
 	/** 迟到了冻结 */
 	public EatFrozen() {
-		let itemManager = MainGameManager.Instance.itemManager;
+		let itemManager = GameGameManager.Instance.itemManager;
 		let gameData = GameData.Instance;
 
 		itemManager.isFrozen = true;
@@ -159,7 +159,7 @@ export default class ItemBase extends cc.Component {
 
 	/** 吃到了垂直跳 */
 	public EatSpring() {
-		let itemManager = MainGameManager.Instance.itemManager;
+		let itemManager = GameGameManager.Instance.itemManager;
 		itemManager.isSpring = true;
 		itemManager.SetItemTime(GameData.Instance.springTime);
 		itemManager.itemEndEvent = () => {
@@ -169,8 +169,8 @@ export default class ItemBase extends cc.Component {
 
 	/** 吃到了放大 */
 	public EatMagnifier() {
-		let itemManager = MainGameManager.Instance.itemManager;
-		let tileManager = MainGameManager.Instance.tileManager;
+		let itemManager = GameGameManager.Instance.itemManager;
+		let tileManager = GameGameManager.Instance.tileManager;
 		itemManager.isMagnifier = true;
 		itemManager.SetItemTime(GameData.Instance.magnifierTime);
 		tileManager.MagnifierTilesScale();

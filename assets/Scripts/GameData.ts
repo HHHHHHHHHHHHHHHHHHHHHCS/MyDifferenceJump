@@ -35,6 +35,8 @@ export default class GameData extends cc.Component {
 	public xMaxBorder: number;//x最大的边界
 	public halfYBorder: number;//y的一半
 
+	public playerReiviveY: number = 10;//复活的Y
+
 	//#endregion
 
 	//#region 跳板参数-----------
@@ -120,7 +122,7 @@ export default class GameData extends cc.Component {
 	public enemy3Speed = 300;//敌人3的移动速度
 	public enemy3KillCount = 3;//敌人3的点击杀死次数
 
-	public enemyRocketWeight =  0.02;//敌人火箭的权重 rd在0~1之间 小于等于这个值
+	public enemyRocketWeight = 0.02;//敌人火箭的权重 rd在0~1之间 小于等于这个值
 	public enemyRocketHeight = 180;//敌人火箭的生成距离
 	public enemyRocketSpeed = 500;//敌人火箭的速度
 	public enemyRocketStartIndex = 15;//敌人火箭初始的index
@@ -150,6 +152,9 @@ export default class GameData extends cc.Component {
 
 	@property(cc.Prefab)
 	public enemyRocketPrefab: cc.Prefab = null;
+
+	@property({ type: [cc.AudioClip] })
+	public effectAudios: cc.AudioClip[] = [];
 
 	onLoad() {
 		GameData.Instance = this;

@@ -1,6 +1,6 @@
 import MyU, { SliderEvent, ClickEvent } from "./My/MyU";
-import MainUIManager from "./MainUIManager";
-import MainGameManager from "./MainGameManager";
+import GameUIManager from "./GameUIManager";
+import GameGameManager from "./GameGameManager";
 import SceneManager from "./SceneManager";
 
 const { ccclass, property } = cc._decorator;
@@ -29,14 +29,19 @@ export default class PauseBg extends cc.Component {
 		resumeButton.on(ClickEvent, this.ClickResume, this);
 		backMenuButton.on(ClickEvent, this.ClickBackMenu, this);
 
-		this.SetAudioEffect(0);
-		this.SetAudioBg(0);
+	}
+
+	protected start() {
+		let audioManager = GameGameManager.Instance.audioManager;
+		this.SetAudioBg(audioManager.BGMVolume);
+		this.SetAudioEffect(audioManager.AudioEffectVolume);
 	}
 
 	/** 设置音效 */
 	public SetAudioEffect(val: number) {
 		this.audioEffectSlider.progress = val;
 		this.audioEffectPb.progress = val;
+		GameGameManager.Instance.audioManager.SetAudioEffect(val);
 	}
 
 	/** 音效事件 */
@@ -48,6 +53,7 @@ export default class PauseBg extends cc.Component {
 	public SetAudioBg(val: number) {
 		this.audioBgSlider.progress = val;
 		this.audioBgPb.progress = val;
+		GameGameManager.Instance.audioManager.SetBGM(val);
 	}
 
 	/** 背景声音事件 */
@@ -58,7 +64,7 @@ export default class PauseBg extends cc.Component {
 	/** 点击继续 */
 	private ClickResume() {
 		this.node.active = false;
-		MainUIManager.Instance.ClickResume();
+		GameUIManager.Instance.ClickResume();
 	}
 
 	/** 点击返回菜单 */

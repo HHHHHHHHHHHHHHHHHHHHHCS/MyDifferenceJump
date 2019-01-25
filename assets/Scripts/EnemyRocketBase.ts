@@ -1,6 +1,6 @@
 import GameData from "./GameData";
 import MyU from "./My/MyU";
-import MainGameManager from "./MainGameManager";
+import GameGameManager from "./GameGameManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -42,22 +42,22 @@ export default class EnemyRocketBase extends cc.Component {
 		this.touchSpeed = undefined;
 		let rdX = MyU.Random(this.gameData.xMinBorder, this.gameData.xMaxBorder);
 		this.node.setPosition(rdX, cameraY + this.gameData.enemyRocketHeight);
-		MainGameManager.Instance.mainUIManager.ShowDangerousTip(rdX);
+		GameGameManager.Instance.mainUIManager.ShowDangerousTip(rdX);
 		this.node.active = true;
 	}
 
 	public OnUpdate(dt: number) {
-		if (this.node.y >= MainGameManager.Instance.lastRecoveryY + this.halfY) {
+		if (this.node.y >= GameGameManager.Instance.lastRecoveryY + this.halfY) {
 			//还在顶部
 		}
-		else if (this.node.y <= MainGameManager.Instance.lastRecoveryY - this.halfY) {
+		else if (this.node.y <= GameGameManager.Instance.lastRecoveryY - this.halfY) {
 			//要被回收
-			MainGameManager.Instance.enemyManager.RecoveryEenmyRocket();
+			GameGameManager.Instance.enemyManager.RecoveryEenmyRocket();
 		}
 		else {
 			//视野内
 			if (this.isInView) {
-				MainGameManager.Instance.mainUIManager.HideDangerousTip();
+				GameGameManager.Instance.mainUIManager.HideDangerousTip();
 				this.isInView = false;
 			}
 		}
@@ -72,7 +72,6 @@ export default class EnemyRocketBase extends cc.Component {
 		if (this.touchSpeed != undefined) {
 			this.node.x += this.touchSpeed * dt;
 		}
-		MyU.Log("pos");
 	}
 
 	private StartTouch(event: cc.Event.EventTouch) {

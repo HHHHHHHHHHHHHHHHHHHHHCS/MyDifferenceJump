@@ -1,7 +1,8 @@
 import GameData, { GameState } from "./GameData";
 import MyU from "./My/MyU";
-import MainGameManager from "./MainGameManager";
+import GameGameManager from "./GameGameManager";
 import ItemBase from "./ItemBase";
+import AudioManager, { EffectAudioEnum } from "./GameAudioManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -87,7 +88,7 @@ export default class TileBase extends cc.Component {
 
 	/** 初始化 */
 	public Init(type: TileType, pos: cc.Vec2) {
-		let itemManager = MainGameManager.Instance.itemManager;
+		let itemManager = GameGameManager.Instance.itemManager;
 		let gameData = GameData.Instance;
 		this.ChangeScale(itemManager.isMagnifier ? gameData.magnifierScale : 1);
 		this.node.opacity = 255;//颜色重新设置,有时候抓住,被回收了颜色是暗淡的
@@ -113,7 +114,7 @@ export default class TileBase extends cc.Component {
 			}
 			case TileType.Move_Hor: {
 				this.moveDir = MyU.RandomNumber(-1, 1);
-				this.moveHorSpeed = GameData.Instance.horMoveSpeed * MainGameManager.Instance.HardNumber;
+				this.moveHorSpeed = GameData.Instance.horMoveSpeed * GameGameManager.Instance.HardNumber;
 				break;
 			}
 			case TileType.Frozen_Hor: {
@@ -169,7 +170,7 @@ export default class TileBase extends cc.Component {
 
 	/** 开始触摸 */
 	private StartTouch(event: cc.Event.EventTouch) {
-		if (MainGameManager.Instance.gameState == GameState.Playing) {
+		if (GameGameManager.Instance.gameState == GameState.Playing) {
 			if (this.startTouchEvent) {
 				this.startTouchEvent();
 			}
@@ -179,7 +180,7 @@ export default class TileBase extends cc.Component {
 
 	/** 保持触摸 */
 	private KeepTouch(event: cc.Event.EventTouch) {
-		if (MainGameManager.Instance.gameState == GameState.Playing) {
+		if (GameGameManager.Instance.gameState == GameState.Playing) {
 			if (this.keepTouchEvent) {
 				this.keepTouchEvent(event)
 			}
@@ -189,7 +190,7 @@ export default class TileBase extends cc.Component {
 
 	/** 结束触摸 */
 	private EndTouch(event: cc.Event.EventTouch) {
-		if (MainGameManager.Instance.gameState == GameState.Playing) {
+		if (GameGameManager.Instance.gameState == GameState.Playing) {
 			if (this.endTouchEvent) {
 				this.endTouchEvent(event)
 			}
@@ -200,7 +201,25 @@ export default class TileBase extends cc.Component {
 
 	/** 跳板被跳跃 */
 	public DoJump() {
-		if (MainGameManager.Instance.gameState == GameState.Playing) {
+		if (GameGameManager.Instance.gameState == GameState.Playing) {
+			let audioType = EffectAudioEnum.jumpAudio;
+			if (GameGameManager.Instance.itemManager.isSpring) {
+				audioType = EffectAudioEnum.springAudio;
+			}
+			else {
+				switch (this.tileType) {
+					case TileType.Spring_Hor: {
+						audioType = EffectAudioEnum.springAudio;
+						break;
+					}
+					case TileType.Touch_Break: {
+						audioType = EffectAudioEnum.touchBreakAudio;
+						break;
+					}
+				}
+			}
+			GameGameManager.Instance.audioManager.PlayEffectAudio(audioType);
+
 			if (this.jumpEvent) {
 				this.jumpEvent();
 			}
@@ -303,9 +322,10 @@ export default class TileBase extends cc.Component {
 	//#region Touch_Break_Tile
 
 	private Touch_Break_End() {
-		if (MainGameManager.Instance.isPlaying) {
+		if (GameGameManager.Instance.isPlaying) {
 			this.node.active = false;
-			MainGameManager.Instance.tileManager.SpawnTouchBreak(this);
+			GameGameManager.Instance.audioManager.PlayEffectAudio(EffectAudioEnum.touchBreakAudio);
+			GameGameManager.Instance.tileManager.SpawnTouchBreak(this);
 		}
 	}
 

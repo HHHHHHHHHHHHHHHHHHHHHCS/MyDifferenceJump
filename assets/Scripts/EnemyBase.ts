@@ -1,6 +1,7 @@
 import MyU from "./My/MyU";
 import GameData from "./GameData";
-import MainGameManager from "./MainGameManager";
+import GameGameManager from "./GameGameManager";
+import { EffectAudioEnum } from "./GameAudioManager";
 
 /** 敌人的类型 */
 export enum EnemyType {
@@ -82,6 +83,7 @@ export default class EnemyBase extends cc.Component {
 		this.reduceOpacity = Math.ceil(this.node.opacity / this.touchCount);
 		this.node.setPosition(MyU.Random(this.xMinBorder, this.xMaxBorder)
 			, posY + MyU.Random(gameData.enemySpawnMinY, gameData.enemySpawnMaxY));
+		GameGameManager.Instance.audioManager.PlayEffectAudio(EffectAudioEnum.spawnEnemyAudio);
 		this.node.active = true;
 	}
 
@@ -120,10 +122,17 @@ export default class EnemyBase extends cc.Component {
 
 	//手抬起
 	public EndTouch() {
-		this.touchCount--;
-		this.node.opacity -= this.reduceOpacity;
-		if (this.touchCount <= 0) {
-			MainGameManager.Instance.enemyManager.RecoveryEnemy(this);
+		if(GameGameManager.Instance.isPlaying){
+			this.touchCount--;
+			this.node.opacity -= this.reduceOpacity;
+			if (this.touchCount <= 0) {
+				let mainGameManager = GameGameManager.Instance;
+				mainGameManager.audioManager.PlayEffectAudio(EffectAudioEnum.enemyDieAudio);
+				mainGameManager.enemyManager.RecoveryEnemy(this);
+			}
+			else {
+				GameGameManager.Instance.audioManager.PlayEffectAudio(EffectAudioEnum.touchEnemyAudio);
+			}
 		}
 	}
 }

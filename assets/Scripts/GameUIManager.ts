@@ -1,14 +1,13 @@
 import GameOverBg from "./GameOverBg";
 import MyU, { ClickEvent } from "./My/MyU";
-import MainGameManager from "./MainGameManager";
+import GameGameManager from "./GameGameManager";
 import { GameState } from "./GameData";
 
 const { ccclass, property } = cc._decorator;
 
-
 @ccclass
-export default class MainUIManager extends cc.Component {
-	public static Instance: MainUIManager;
+export default class GameUIManager extends cc.Component {
+	public static Instance: GameUIManager;
 
 	private pauseBg: cc.Node;
 	private pauseButton: cc.Node;
@@ -20,7 +19,7 @@ export default class MainUIManager extends cc.Component {
 	private gameOverBg: GameOverBg;
 
 	protected onLoad() {
-		MainUIManager.Instance = this;
+		GameUIManager.Instance = this;
 
 		this.pauseBg = cc.find("PauseBg", this.node);
 		this.pauseButton = cc.find("PauseButton", this.node);
@@ -73,7 +72,7 @@ export default class MainUIManager extends cc.Component {
 		this.pauseBg.active = true;
 		this.pauseButton.active = false;
 		this.resumeButton.active = true;
-		MainGameManager.Instance.PauseGame();
+		GameGameManager.Instance.PauseGame();
 	}
 
 	/** 点击继续按钮 */
@@ -81,6 +80,6 @@ export default class MainUIManager extends cc.Component {
 		this.pauseBg.active = false;
 		this.pauseButton.active = true;
 		this.resumeButton.active = false;
-		MainGameManager.Instance.ResumeGame();
+		GameGameManager.Instance.ResumeGame();
 	}
 }

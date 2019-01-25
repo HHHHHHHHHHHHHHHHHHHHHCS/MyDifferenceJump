@@ -2,10 +2,11 @@ import EnemyBase, { EnemyType } from "./EnemyBase";
 import ObjectPool from "./ObjectPool";
 import GameData from "./GameData";
 import TileManager from "./TileManager";
-import MainGameManager from "./MainGameManager";
+import GameGameManager from "./GameGameManager";
 import MyU from "./My/MyU";
 import TileBase from "./TileBase";
 import EnemyRocketBase from "./EnemyRocketBase";
+import { EffectAudioEnum } from "./GameAudioManager";
 
 /** 敌人管理器 */
 export default class EnemyManager {
@@ -22,7 +23,7 @@ export default class EnemyManager {
 
 	public constructor() {
 		this.gameData = GameData.Instance;
-		this.tileManager = MainGameManager.Instance.tileManager;
+		this.tileManager = GameGameManager.Instance.tileManager;
 
 		let parent = cc.find("World/EnemyParent");
 		this.nowEnemyList = [];
@@ -98,6 +99,17 @@ export default class EnemyManager {
 			}
 		}
 
+	}
+
+	/** 回收任意敌人 */
+	public Recovery(enemy: cc.Collider) {
+		var temp = enemy.getComponent(EnemyRocketBase);
+		if (temp != null) {
+			this.RecoveryEenmyRocket();
+		}
+		else {
+			this.RecoveryEnemy(enemy.node.parent.getComponent(EnemyBase));
+		}
 	}
 
 	/** 回收敌人 */
