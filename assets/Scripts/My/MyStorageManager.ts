@@ -1,8 +1,8 @@
 export enum StorageEnum {
 	BGMVolume,
 	AudioEffectVolume,
-	HighScore,
-
+	NormalHighScore,
+	NightmareHighScore,
 }
 
 /** 储存数据 */
@@ -20,12 +20,20 @@ export default class MyStorageManager {
 
 	/** 读取数据 */
 	public static GetInt(type: StorageEnum): number {
-		return Number.parseInt(MyStorageManager.GetString(type));
+		var value = Number.parseInt(MyStorageManager.GetString(type));
+		if (isNaN(value)) {
+			value = 0;
+		}
+		return value;
 	}
 
 	/** 读取数据 */
 	public static GetFloat(type: StorageEnum): number {
-		return Number.parseFloat(MyStorageManager.GetString(type));
+		var value = Number.parseFloat(MyStorageManager.GetString(type));
+		if (isNaN(value)) {
+			value = 0;
+		}
+		return value;
 	}
 
 	/** 读取数据 */

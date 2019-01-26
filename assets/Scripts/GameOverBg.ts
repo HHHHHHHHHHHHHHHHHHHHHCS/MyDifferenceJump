@@ -2,16 +2,20 @@ import MyU, { ClickEvent } from "./My/MyU";
 import SceneManager from "./SceneManager";
 import GameGameManager from "./GameGameManager";
 import MyStorageManager, { StorageEnum } from "./My/MyStorageManager";
+import GameData from "./GameData";
 
 const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class GameOverBg extends cc.Component {
 	private nowScoreText: cc.Label;
+	private highScoreLabel: cc.RichText;
 	private highScoreText: cc.Label;
 	private reviveButton: cc.Button;
+
 	protected onLoad() {
 		this.nowScoreText = cc.find("NowScoreText", this.node).getComponent(cc.Label);
+		this.highScoreLabel = cc.find("HighScoreLabel", this.node).getComponent(cc.RichText);
 		this.highScoreText = cc.find("HighScoreText", this.node).getComponent(cc.Label);
 		this.reviveButton = cc.find("ReviveButton", this.node).getComponent(cc.Button);
 		let againButton = cc.find("AgainButton", this.node);
@@ -27,11 +31,14 @@ export default class GameOverBg extends cc.Component {
 		this.node.active = true;
 		this.nowScoreText.string = GameGameManager.Instance.NowScore.toString();
 		this.reviveButton.interactable = !GameGameManager.Instance.IsReivived;
-		let highScore = MyStorageManager.GetFloat(StorageEnum.HighScore);
-		if (isNaN(highScore)) {
-			highScore = 0;
+		if (GameData.IsNormalMode) {
+			this.highScoreLabel.string = "<color=0><b>正常最高分数</b></color>";
+			this.highScoreText.string = MyStorageManager.GetFloat(StorageEnum.NormalHighScore).toString();
 		}
-		this.highScoreText.string = highScore.toString();
+		else {
+			this.highScoreLabel.string = "<color=0><b>噩梦最高分数</b></color>";
+			this.highScoreText.string = MyStorageManager.GetFloat(StorageEnum.NightmareHighScore).toString();
+		}
 	}
 
 	public ClickReivive(event: cc.Button) {

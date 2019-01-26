@@ -24,7 +24,7 @@ export const enum GameState {
  * 
  * */
 export default class GameData extends cc.Component {
-
+	public static IsNormalMode = true;
 	public static Instance: GameData;
 
 	//#region 游戏的数据-----------
@@ -40,6 +40,7 @@ export default class GameData extends cc.Component {
 	//#endregion
 
 	//#region 跳板参数-----------
+	//正常-----------
 	public startTileY = -750;//开始跳板的Y,第一个会加一个nextTileY
 	public recoveryTileY = 15;//跳板回收的Y
 
@@ -61,13 +62,17 @@ export default class GameData extends cc.Component {
 	public touchBreakNext = 5;//点击碎裂跳板的生成间隔
 	public touchBreakTime = 1;//点击碎裂跳板的裂开MoveBy的时间
 
-	public springHorWeight = 0.2;//点击碎裂跳板的权重
-	public springHorNext = 5;//点击碎裂跳板的生成间隔
-	public springHorForceScale = 1.5;//点击碎裂跳板的生成间隔
+	public springHorWeight = 0.2;//弹簧跳板的权重
+	public springHorNext = 5;//弹簧跳板的生成间隔
+	public springHorForceScale = 1.5;//弹簧跳板的生成间隔
 
 	public frozenHorWeight = 0.1;//冻结跳板的权重
 	public frozenHorNext = 3;//冻结碎裂跳板的生成间隔
 	public frozenHorTouchCount = 3;//冻结碎裂跳板的生成间隔
+	//噩梦-----------
+	public nightmareTouchBreakWeight = 10000;//点击碎裂跳板的权重
+	public nightmaretouchBreakNext = 0;//点击碎裂跳板的生成间隔
+	public nightmareTouchBreakTime = 1;//点击碎裂跳板的裂开MoveBy的时间
 	//#endregion
 
 	//#region 物品参数-----------
@@ -165,24 +170,56 @@ export default class GameData extends cc.Component {
 		this.halfYBorder = world.height / 2;
 		this.recoveryTileY += this.halfYBorder;
 
-		this.normalVerWeight += this.normalHorWeight;
-		this.moveHorWeight += this.normalVerWeight;
-		this.touchBreakWeight += this.moveHorWeight;
-		this.springHorWeight += this.touchBreakWeight;
-		this.frozenHorWeight += this.springHorWeight;
-		this.allTileWeight = this.frozenHorWeight;
+		if (GameData.IsNormalMode) {
+			this.normalVerWeight += this.normalHorWeight;
+			this.moveHorWeight += this.normalVerWeight;
+			this.touchBreakWeight += this.moveHorWeight;
+			this.springHorWeight += this.touchBreakWeight;
+			this.frozenHorWeight += this.springHorWeight;
+			this.allTileWeight = this.frozenHorWeight;
 
-		this.hatWeight += this.itemNoneWeight;
-		this.rocketWeight += this.hatWeight;
-		this.frozenWeight += this.rocketWeight;
-		this.springWeight += this.frozenWeight;
-		this.magnifierWeight += this.springWeight;
-		this.allItemWeight = this.magnifierWeight;
+			this.hatWeight += this.itemNoneWeight;
+			this.rocketWeight += this.hatWeight;
+			this.frozenWeight += this.rocketWeight;
+			this.springWeight += this.frozenWeight;
+			this.magnifierWeight += this.springWeight;
+			this.allItemWeight = this.magnifierWeight;
 
-		this.recoveryEnemyY += this.halfYBorder;
-		this.enemy1Weight += this.enemyNoneWeight;
-		this.enemy2Weight += this.enemy1Weight;
-		this.enemy3Weight += this.enemy2Weight;
-		this.allEnemyWeight = this.enemy3Weight;
+
+			this.recoveryEnemyY += this.halfYBorder;
+			this.enemy1Weight += this.enemyNoneWeight;
+			this.enemy2Weight += this.enemy1Weight;
+			this.enemy3Weight += this.enemy2Weight;
+			this.allEnemyWeight = this.enemy3Weight;
+		}
+		else {
+			this.normalHorWeight = -1;
+			this.normalVerWeight = -1;
+			this.moveHorWeight = -1;
+			this.touchBreakWeight = this.nightmareTouchBreakWeight;
+			this.springHorWeight = -1;
+			this.frozenHorWeight = -1;
+			this.allTileWeight = this.touchBreakWeight;
+
+			this.touchBreakNext = this.nightmaretouchBreakNext;
+			this.touchBreakTime = this.nightmareTouchBreakTime;
+
+			this.hatWeight = -1;
+			this.rocketWeight = -1;
+			this.frozenWeight = -1;
+			this.springWeight = -1;
+			this.magnifierWeight = -1;
+			this.allItemWeight = this.itemNoneWeight;
+
+			this.recoveryEnemyY += this.halfYBorder;
+			this.enemy1Weight = -1;
+			this.enemy2Weight = -1;
+			this.enemy3Weight = -1;
+			this.allEnemyWeight = this.enemyNoneWeight;
+		}
+
+
+
+
 	}
 }

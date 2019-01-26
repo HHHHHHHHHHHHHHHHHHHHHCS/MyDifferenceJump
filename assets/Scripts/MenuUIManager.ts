@@ -2,6 +2,7 @@ import MyU, { ClickEvent, SliderEvent } from "./My/MyU";
 import SceneManager from "./SceneManager";
 import MenuAudioManager from "./MenuAudioManager";
 import MyStorageManager, { StorageEnum } from "./My/MyStorageManager";
+import GameData from "./GameData";
 
 const { ccclass, property } = cc._decorator;
 
@@ -10,7 +11,8 @@ export default class MenuUIManager extends cc.Component {
 	public audioManager: MenuAudioManager;
 
 	private scoreBg: cc.Node;
-	private highScoreText: cc.Label;
+	private normalHighScoreText: cc.Label;
+	private nighmareHighScoreText: cc.Label;
 
 	private optionBg: cc.Node;
 	private audioEffectSlider: cc.Slider;
@@ -31,8 +33,8 @@ export default class MenuUIManager extends cc.Component {
 		this.scoreBg = cc.find("ScoreBg", world);
 		let scorePanel = cc.find("Panel", this.scoreBg);
 		let scoreCloseButton = cc.find("CloseButton", scorePanel);
-		this.highScoreText = cc.find("HighScoreText", scorePanel).getComponent(cc.Label);
-
+		this.normalHighScoreText = cc.find("NormalHighScoreText", scorePanel).getComponent(cc.Label);
+		this.nighmareHighScoreText = cc.find("NightmareHighScoreText", scorePanel).getComponent(cc.Label);
 
 		this.optionBg = cc.find("OptionBg", world);
 		let optionPanel = cc.find("Panel", this.optionBg);
@@ -45,8 +47,8 @@ export default class MenuUIManager extends cc.Component {
 		this.audioBgPb = audioBgNode.getComponent(cc.ProgressBar);
 
 
-		normalPlayButton.on(ClickEvent, (event) => { SceneManager.LoadGameScene(); });
-		nightmarePlayButton.on(ClickEvent, (event) => { SceneManager.LoadGameScene(); });
+		normalPlayButton.on(ClickEvent, (event) => { this.ClickNormalPlay(); });
+		nightmarePlayButton.on(ClickEvent, (event) => { this.ClickNighmarePlay(); });
 
 		scoreButton.on(ClickEvent, (event) => { this.ShowScoreBg(); });
 		scoreCloseButton.on(ClickEvent, (event) => { this.HideScoreBg(); });
@@ -57,13 +59,25 @@ export default class MenuUIManager extends cc.Component {
 		audioBgNode.on(SliderEvent, this.SliderAudioBg, this);
 	}
 
+	protected start() {
+		this.SetAudioBg(this.audioManager.BGMVolume);
+		this.SetAudioEffect(this.audioManager.AudioEffectVolume);
+	}
+
+	private ClickNormalPlay() {
+		GameData.IsNormalMode = true;
+		SceneManager.LoadGameScene();
+	}
+
+	private ClickNighmarePlay() {
+		GameData.IsNormalMode = false;
+		SceneManager.LoadGameScene();
+	}
+
 	private ShowScoreBg() {
 		this.scoreBg.active = true;
-		let highScore = MyStorageManager.GetFloat(StorageEnum.HighScore);
-		if (isNaN(highScore)) {
-			highScore = 0;
-		}
-		this.highScoreText.string = highScore.toString();
+		this.normalHighScoreText.string = MyStorageManager.GetFloat(StorageEnum.NormalHighScore).toString();
+		this.nighmareHighScoreText.string = MyStorageManager.GetFloat(StorageEnum.NightmareHighScore).toString();
 	}
 
 	private HideScoreBg() {

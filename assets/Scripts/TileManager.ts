@@ -82,7 +82,7 @@ export default class TileManager {
 	/** 获得随机跳板 */
 	public GetRandomTileType(): TileType {
 		let weight = MyU.Random(0, this.gameData.allTileWeight);
-
+		
 		if (weight <= this.gameData.normalHorWeight) {
 			return TileType.Normal_Hor;
 		}

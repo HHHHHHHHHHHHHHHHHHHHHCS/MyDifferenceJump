@@ -41,15 +41,7 @@ export default class GameAudioManager {
 		this.bgmSource = cc.find("World/GameAudioManager").getComponent(cc.AudioSource).getComponent(cc.AudioSource);
 
 		let bgmVolume = MyStorageManager.GetFloat(StorageEnum.BGMVolume);
-		if (isNaN(bgmVolume)) {
-			bgmVolume = 1;
-		}
-
 		let audioEffectVolume = MyStorageManager.GetFloat(StorageEnum.AudioEffectVolume);
-		if (isNaN(audioEffectVolume)) {
-			audioEffectVolume = 1;
-		}
-
 
 		this.SetBGM(bgmVolume);
 		this.SetAudioEffect(audioEffectVolume);

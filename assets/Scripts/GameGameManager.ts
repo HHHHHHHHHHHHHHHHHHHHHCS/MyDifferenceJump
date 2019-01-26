@@ -119,15 +119,13 @@ export default class GameGameManager extends cc.Component {
 	public GameOver() {
 		this.gameState = GameState.GameOver;
 		this.isPlaying = false;
-		let highScore = MyStorageManager.GetFloat(StorageEnum.HighScore);
-
-		if (isNaN(highScore)) {
-			highScore = 0;
-		}
-
+		let saveKey = GameData.IsNormalMode ? StorageEnum.NormalHighScore : StorageEnum.NightmareHighScore;
+		
+		let highScore = MyStorageManager.GetFloat(saveKey);
 		if (this.nowScore > highScore) {
-			MyStorageManager.Save(StorageEnum.HighScore, this.nowScore);
+			MyStorageManager.Save(saveKey, this.nowScore);
 		}
+
 		this.mainUIManager.ShowGameOverBg();
 	}
 
