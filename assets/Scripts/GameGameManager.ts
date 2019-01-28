@@ -1,3 +1,7 @@
+/// <reference path="../../wx.d.ts" />
+
+const WX = window["wx"] as wx;
+
 import Player from "./Player";
 import TileManager from "./TileManager";
 import { GameState } from "./GameData";
@@ -68,6 +72,9 @@ export default class GameGameManager extends cc.Component {
 		this.tileManager.createTileEvent.push((tile) => { this.itemManager.CreateItem(tile); });
 		this.tileManager.createTileEvent.push((tile) => { this.enemyManager.CreateEnemy(tile); })
 		this.tileManager.recoveryTileEvent.push((tile) => { this.itemManager.RecoveryItem(tile); });
+
+
+
 	}
 
 	/** 第一帧开始 */
@@ -77,6 +84,32 @@ export default class GameGameManager extends cc.Component {
 		this.AddHard(1);
 		this.tileManager.OnStart();
 		this.node.on(cc.Node.EventType.TOUCH_START, this.StartGame, this);
+
+		if (CC_WECHATGAME) {
+			//开启右上角的分享
+			WX.showShareMenu(null);
+			//监听右上角的分享调用 
+			cc.loader.loadRes("texture/share", function (err, data) {
+				WX.shareAppMessage(function(res){
+					return {
+						title: '我发现了一个很好玩的小游戏，赶紧一起来台球帝国打台球吧~',
+						imageUrl: data.url,
+						success(res) {
+							console.log('分享成功', res);
+							// 转发成功
+							WX.showToast({
+								title: '分享成功',
+							});
+						},
+						fail(res) {
+							console.log('分享失败', res)
+							// 转发失败
+						}
+					}
+				}());
+			});
+		}
+
 	}
 
 	/** 每桢事件 */
@@ -120,7 +153,7 @@ export default class GameGameManager extends cc.Component {
 		this.gameState = GameState.GameOver;
 		this.isPlaying = false;
 		let saveKey = GameData.IsNormalMode ? StorageEnum.NormalHighScore : StorageEnum.NightmareHighScore;
-		
+
 		let highScore = MyStorageManager.GetFloat(saveKey);
 		if (this.nowScore > highScore) {
 			MyStorageManager.Save(saveKey, this.nowScore);
