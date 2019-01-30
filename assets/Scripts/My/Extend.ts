@@ -19,3 +19,4 @@ Array.prototype.Remove = function (val) {
 		this.splice(index, 1);
 	}
 };
+

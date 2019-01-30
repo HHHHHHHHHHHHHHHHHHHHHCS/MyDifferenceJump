@@ -1,6 +1,6 @@
 import MyU, { ClickEvent } from "./My/MyU";
 import SceneManager from "./SceneManager";
-import GameGameManager from "./GameGameManager";
+import GameGameManager, { WX } from "./GameGameManager";
 import MyStorageManager, { StorageEnum } from "./My/MyStorageManager";
 import GameData from "./GameData";
 
@@ -42,8 +42,33 @@ export default class GameOverBg extends cc.Component {
 	}
 
 	public ClickReivive(event: cc.Button) {
+		this.reviveButton.interactable = false;
+		if (CC_WECHATGAME) {
+			//开启右上角的分享
+			WX.showShareMenu({
+				withShareTicket: true
+			});
+			//监听右上角的分享调用 
+			cc.loader.loadRes("texture/share.png", function (err, data) {
+				WX.shareAppMessage(function () {
+					return {
+						title: '是男人就来!!!',
+						imageUrl: data.url,
+						success() {
+							console.log("转发成功!!!");
+							WX.showToast({
+								title: '分享成功',
+							});
+							GameGameManager.Instance.DoReivive();
+						}
+					};
+				}());
+			});
+		}
+		else {
+			GameGameManager.Instance.DoReivive();
+		}
 		this.node.active = false;
-		GameGameManager.Instance.DoReivive();
 	}
 
 
