@@ -1,3 +1,8 @@
+/// <reference path="../../wx.d.ts" />
+
+export const WX = window["wx"] as wx;
+
+
 import MyU, { ClickEvent, SliderEvent } from "./My/MyU";
 import SceneManager from "./SceneManager";
 import MenuAudioManager from "./MenuAudioManager";
@@ -20,6 +25,8 @@ export default class MenuUIManager extends cc.Component {
 	private audioBgSlider: cc.Slider;
 	private audioBgPb: cc.ProgressBar;
 
+	private helpBg: cc.Node;
+
 
 	protected onLoad() {
 		this.audioManager = new MenuAudioManager();
@@ -29,6 +36,8 @@ export default class MenuUIManager extends cc.Component {
 		let nightmarePlayButton = cc.find("NightmarePlayButton", world);
 		let optionButton = cc.find("OptionButton", world);
 		let scoreButton = cc.find("ScoreButton", world);
+		let helpButton = cc.find("HelpButton", world);
+		let shareButton = cc.find("ShareButton", world);
 
 		this.scoreBg = cc.find("ScoreBg", world);
 		let scorePanel = cc.find("Panel", this.scoreBg);
@@ -46,6 +55,9 @@ export default class MenuUIManager extends cc.Component {
 		this.audioBgSlider = audioBgNode.getComponent(cc.Slider);
 		this.audioBgPb = audioBgNode.getComponent(cc.ProgressBar);
 
+		this.helpBg = cc.find("HelpBg", world);
+		let helpCloseButton = cc.find("Panel/CloseButton", this.helpBg);
+
 
 		normalPlayButton.on(ClickEvent, (event) => { this.ClickNormalPlay(); });
 		nightmarePlayButton.on(ClickEvent, (event) => { this.ClickNighmarePlay(); });
@@ -54,6 +66,9 @@ export default class MenuUIManager extends cc.Component {
 		scoreCloseButton.on(ClickEvent, (event) => { this.HideScoreBg(); });
 		optionButton.on(ClickEvent, (event) => { this.ShowOptionBg(); });
 		optionCloseButton.on(ClickEvent, (event) => { this.HideOptionBg(); });
+		helpButton.on(ClickEvent, (event) => { this.ShowHelpBg(); });
+		helpCloseButton.on(ClickEvent, (event) => { this.HideHelpBg(); });
+		shareButton.on(ClickEvent, (event) => { this.ClickShareButton(); });
 
 		audioEffectNode.on(SliderEvent, this.SliderAudioEffect, this);
 		audioBgNode.on(SliderEvent, this.SliderAudioBg, this);
@@ -92,6 +107,38 @@ export default class MenuUIManager extends cc.Component {
 		this.optionBg.active = false;
 	}
 
+	private ShowHelpBg() {
+		this.helpBg.active = true;
+	}
+
+	private HideHelpBg() {
+		this.helpBg.active = false;
+	}
+
+	private ClickShareButton() {
+		if (CC_WECHATGAME) {
+			//开启右上角的分享
+			WX.showShareMenu({
+				withShareTicket: true
+			});
+			//监听右上角的分享调用 
+			cc.loader.loadRes("texture/share.png", function (err, data) {
+				WX.shareAppMessage(function () {
+					return {
+						title: '爱的跳跃转圈圈!!!',
+						imageUrl: data.url,
+						success() {
+							console.log("转发成功!!!");
+							WX.showToast({
+								title: '分享成功',
+							});
+						}
+					};
+				}());
+			});
+		}
+
+	}
 
 	/** 设置音效 */
 	public SetAudioEffect(val: number) {
