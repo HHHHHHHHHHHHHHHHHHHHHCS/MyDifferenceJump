@@ -48,22 +48,22 @@ export default class GameOverBg extends cc.Component {
 			WX.showShareMenu({
 				withShareTicket: true
 			});
-			//监听右上角的分享调用 
-			cc.loader.loadRes("texture/share.png", function (err, data) {
-				WX.shareAppMessage(function () {
-					return {
-						title: '是男人就来!!!',
-						imageUrl: data.url,
-						success() {
-							console.log("转发成功!!!");
-							WX.showToast({
-								title: '分享成功',
-							});
-							GameGameManager.Instance.DoReivive();
-						}
-					};
-				}());
-			});
+
+			//监听右上角的分享调用
+			WX.shareAppMessage(function () {
+				return {
+					title: '爱的跳跃转圈圈!!!',
+					imageUrlId: 'QmfVyTWRRdywJMP2ptHOrg',
+					imageUrl: 'https://mmocgame.qpic.cn/wechatgame/AkyzNsiboWt2A1gfRNu6FyF9vSLTIYQsnRuT1GfLJt9fSAhpSCic0JSdmFviapz5YUJ/0',
+					success() {
+						console.log("转发成功!!!");
+						WX.showToast({
+							title: '分享成功',
+						});
+						GameGameManager.Instance.DoReivive();
+					}
+				};
+			}());
 		}
 		else {
 			GameGameManager.Instance.DoReivive();
